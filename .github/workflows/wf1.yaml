@@ -1,0 +1,11 @@
+name: workflow1
+
+on:
+  push
+
+jobs:
+  job1:
+    runs-on: windows-latest
+    steps:
+      -uses: actions/checkout@v3
+      -run: dir
