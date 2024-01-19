@@ -1,2 +1,3 @@
 $PSVersionTable
 $PSVersionTable
+$env:TEMP
