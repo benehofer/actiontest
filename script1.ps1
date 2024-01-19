@@ -3,5 +3,5 @@ param(
 )
 
 Write-Host "Hello"
-Write-Host $environment
+Write-Host $env:environment
 $(get-date) | Out-File "$($env:TEMP)\text.txt"
