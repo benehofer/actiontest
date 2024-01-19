@@ -3,10 +3,14 @@ name: 'deploy iac'
 on:
   push:
     branches:
+      - 'main'
       - 'feature/**'
+    paths:
+      - 'iac/**'
+      - 'ps/**'
 
 jobs:
-  paths-filter:
+  detect-change:
     runs-on: ubuntu-latest
     outputs:
       iac: ${{ steps.filter.outputs.iac }}
@@ -23,28 +27,78 @@ jobs:
             - 'ps/**'
         base: ${{ github.ref }}
 
-  next-job:
+  build-iac:
     runs-on: windows-latest
-    needs: paths-filter
-    if: needs.paths-filter.outputs.iac == 'true'
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.iac == 'true'}}
     steps:
-    - uses: actions/checkout@v3
-    - name: Build iac
-      shell: pwsh
-      run: .\devops\iac\deploy.ps1
-      env:
-          environment: 'Integration'
+      - uses: actions/checkout@v3
+      - name: Build iac
+        shell: pwsh
+        run: .\devops\iac\build.ps1
+        env:
+            environment: 'WagnerTest'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iac-build
+          path: deployment\iac\**
+          retention-days: 5
 
-  third-job:
+  build-ps:
     runs-on: windows-latest
-    needs: [paths-filter, next-job]
-    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && needs.paths-filter.outputs.ps == 'true' }}
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.ps == 'true'}}
     steps:
-    - uses: actions/checkout@v3
-    - run: echo ${{ needs.paths-filter.outputs.ps }}
-    - name: Build ps
-      shell: pwsh
-      run: .\devops\ps\deploy.ps1
-      env:
+      - uses: actions/checkout@v3
+      - name: Build ps
+        shell: pwsh
+        run: .\devops\ps\build.ps1
+        env:
+            mode: 'plan'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ps-build
+          path: deployment\ps\**
+          retention-days: 5    
+
+  plan-integration-iac:
+    runs-on: windows-latest
+    needs: build-iac
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: iac-build
+      - name: Build iac
+        shell: pwsh
+        run: .\devops\iac\deploy.ps1
+        env:
+          mode: 'plan'
+          environment: 'WagnerTest'
+
+  apply-integration-iac:
+    runs-on: windows-latest
+    needs: [build-iac, plan-integration-iac]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: iac-build
+      - name: Build iac
+        shell: pwsh
+        run: .\devops\iac\deploy.ps1
+        env:
+          mode: 'apply'
+          environment: 'WagnerTest'
+  
+  apply-integration-ps:
+    runs-on: windows-latest
+    needs: [build-ps]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ps-build
+      - name: Build ps
+        shell: pwsh
+        run: .\devops\ps\deploy.ps1
+        env:
+          mode: 'apply'
           environment: 'Integration'
-    
