@@ -25,10 +25,10 @@ jobs:
   next-job:
     runs-on: windows-latest
     needs: paths-filter
-    if: needs.paths-filter.outputs.iac == 'true'
     steps:
     - uses: actions/checkout@v3
     - name: Build iac
+      if: needs.paths-filter.outputs.iac == 'true'
       shell: pwsh
       run: .\devops\iac\deploy.ps1
       env:
@@ -36,11 +36,11 @@ jobs:
 
   third-job:
     runs-on: windows-latest
-    needs: next-job
-    if: needs.paths-filter.outputs.ps == 'true'
+    needs: [paths-filter, next-job]
     steps:
     - uses: actions/checkout@v3
     - name: Build ps
+      if: needs.paths-filter.outputs.ps == 'true'
       shell: pwsh
       run: .\devops\ps\deploy.ps1
       env:
