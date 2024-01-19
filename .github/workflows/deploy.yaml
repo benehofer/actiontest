@@ -63,6 +63,7 @@ jobs:
 
   plan-integration-iac:
     runs-on: windows-latest
+    environment: integration-plan
     needs: build-iac
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +82,7 @@ jobs:
 
   apply-integration-iac:
     runs-on: windows-latest
+    environment: Integration
     needs: [build-iac, plan-integration-iac]
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +101,7 @@ jobs:
   
   apply-integration-ps:
     runs-on: windows-latest
+    environment: integration
     needs: [build-ps, plan-integration-iac, apply-integration-iac]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
     steps:
