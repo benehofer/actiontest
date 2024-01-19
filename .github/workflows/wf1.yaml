@@ -12,4 +12,4 @@ jobs:
       shell: pwsh
       run: .\script1.ps1
       env:
-          environment: 'Integration's
+          environment: 'Integration'
