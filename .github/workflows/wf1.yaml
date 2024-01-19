@@ -37,6 +37,7 @@ jobs:
   third-job:
     runs-on: windows-latest
     needs: [paths-filter, next-job]
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') }}
     steps:
     - uses: actions/checkout@v3
     - name: Build ps
