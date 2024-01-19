@@ -24,29 +24,25 @@ jobs:
 
   next-job:
     runs-on: windows-latest
-    # Wait from the paths-filter to be completed before starting next-job
     needs: paths-filter
     if: needs.paths-filter.outputs.iac == 'true'
     steps:
     - uses: actions/checkout@v3
-    - name: Integration-plan
+    - name: Build iac
       shell: pwsh
-      run: .\script1.ps1
+      run: .\devops\iac\deploy.ps1
       env:
           environment: 'Integration'
-  
 
-
-
-
-
-
-
-
-
-
-
-
-
-jobs:
-  deploy iac:
+  third-job:
+    runs-on: windows-latest
+    needs: next-job
+    if: needs.paths-filter.outputs.ps == 'true'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build ps
+      shell: pwsh
+      run: .\devops\ps\deploy.ps1
+      env:
+          environment: 'Integration'
+    
