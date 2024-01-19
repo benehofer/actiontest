@@ -21,6 +21,7 @@ jobs:
             - 'iac/**'
           ps:
             - 'ps/**'
+        base: ${{ github.ref }}
 
   next-job:
     runs-on: windows-latest
