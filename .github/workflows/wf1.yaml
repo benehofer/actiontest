@@ -40,6 +40,7 @@ jobs:
     if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && needs.paths-filter.outputs.ps == 'true' }}
     steps:
     - uses: actions/checkout@v3
+    - run: echo ${{ needs.paths-filter.outputs.ps }}
     - name: Build ps
       shell: pwsh
       run: .\devops\ps\deploy.ps1
