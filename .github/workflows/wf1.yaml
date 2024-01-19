@@ -91,7 +91,8 @@ jobs:
   
   apply-integration-ps:
     runs-on: windows-latest
-    needs: [build-ps]
+    needs: [build-ps, plan-integration-iac, apply-integration-iac]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
     steps:
       - uses: actions/download-artifact@v4
         with:
