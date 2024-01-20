@@ -1,13 +1,12 @@
-name: 'integration'
+name: 'Production validation'
 
 on:
-  push:
+  pull_request:
     branches:
-      - 'main'
-      - 'feature/**'
+      - main
     paths:
       - 'iac/**'
-      - 'ps/**'
+      - 'ps/**'      
 
 jobs:
   detect-change:
@@ -25,7 +24,7 @@ jobs:
             - 'iac/**'
           ps:
             - 'ps/**'
-        base: ${{ github.ref }}
+        base: main
 
   build-iac:
     runs-on: windows-latest
@@ -37,7 +36,7 @@ jobs:
         shell: pwsh
         run: .\devops\iac\build.ps1
         env:
-            environment: 'WagnerTest'
+            environment: 'WagnerProd'
       - uses: actions/upload-artifact@v4
         with:
           name: iac-build
@@ -59,9 +58,9 @@ jobs:
         with:
           name: ps-build
           path: deployment\ps\**
-          retention-days: 5    
+          retention-days: 5
 
-  plan-integration-iac:
+  plan-production-iac:
     runs-on: windows-latest
     environment: integration-plan
     needs: build-iac
@@ -79,42 +78,3 @@ jobs:
         env:
           mode: 'plan'
           environment: 'WagnerTest'
-
-  apply-integration-iac:
-    runs-on: windows-latest
-    environment: Integration
-    needs: [build-iac, plan-integration-iac]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: iac-build
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\deploy.ps1
-        env:
-          mode: 'apply'
-          environment: 'WagnerTest'
-  
-  apply-integration-ps:
-    runs-on: windows-latest
-    environment: integration
-    needs: [build-ps, plan-integration-iac, apply-integration-iac]
-    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: ps-build
-      - name: Build ps
-        shell: pwsh
-        run: .\devops\ps\deploy.ps1
-        env:
-          mode: 'apply'
-          environment: 'Integration'
