@@ -62,8 +62,6 @@ jobs:
           retention-days: 5    
 
   plan-integration-iac:
-    runs-on: windows-latest
-    environment: integration-plan
     needs: build-iac
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
