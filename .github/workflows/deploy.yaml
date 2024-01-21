@@ -48,7 +48,7 @@ jobs:
 #    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
-    uses: ./.github/workflows/template-deploy-iac.yaml
+    uses: ./.github/workflows/template-build.yaml
     with:
       artifacttype: 'ps'
       artifactname: 'ps-build'
