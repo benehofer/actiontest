@@ -10,71 +10,28 @@ on:
 
 jobs:
   detect-change:
-    runs-on: ubuntu-latest
-    outputs:
-      iac: ${{ steps.filter.outputs.iac }}
-      ps: ${{ steps.filter.outputs.ps }}
-    steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          iac:
-            - 'iac/**'
-          ps:
-            - 'ps/**'
-        base: main
+    uses: ./.github/workflows/template-detect-change.yaml
 
   build-iac:
-    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\build.ps1
-        env:
-            environment: 'WagnerProd'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: iac-build
-          path: deployment\iac\**
-          retention-days: 5
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      artifacttype: 'iac'
+    secrets: inherit
 
   build-ps:
-    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build ps
-        shell: pwsh
-        run: .\devops\ps\build.ps1
-        env:
-            mode: 'plan'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ps-build
-          path: deployment\ps\**
-          retention-days: 5
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      artifacttype: 'ps'
+    secrets: inherit      
 
-  plan-production-iac:
-    runs-on: windows-latest
-    environment: integration-plan
+  plan-integration-iac:
     needs: build-iac
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: iac-build
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\deploy.ps1
-        env:
-          mode: 'plan'
-          environment: 'WagnerTest'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'integration-plan'
+      workflowtype: iac
+    secrets: inherit                

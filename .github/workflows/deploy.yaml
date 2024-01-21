@@ -12,21 +12,6 @@ on:
 jobs:
   detect-change:
     uses: ./.github/workflows/template-detect-change.yaml
-#    runs-on: ubuntu-latest
-#    outputs:
-#      iac: ${{ steps.filter.outputs.iac }}
-#      ps: ${{ steps.filter.outputs.ps }}
-#    steps:
-#    - uses: actions/checkout@v3
-#    - uses: dorny/paths-filter@v2
-#      id: filter
-#      with:
-#        filters: |
-#          iac:
-#            - 'iac/**'
-#          ps:
-#            - 'ps/**'
-#        base: ${{ github.ref }}
 
   build-iac:
     needs: detect-change
