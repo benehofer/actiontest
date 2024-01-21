@@ -1,0 +1,22 @@
+name: Detect change in repos
+
+on:
+  workflow_call:
+
+jobs:
+  detect-change:
+    runs-on: ubuntu-latest
+    outputs:
+      iac: ${{ steps.filter.outputs.iac }}
+      ps: ${{ steps.filter.outputs.ps }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          iac:
+            - 'iac/**'
+          ps:
+            - 'ps/**'
+        base: ${{ github.ref }}

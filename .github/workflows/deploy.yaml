@@ -11,21 +11,22 @@ on:
 
 jobs:
   detect-change:
-    runs-on: ubuntu-latest
-    outputs:
-      iac: ${{ steps.filter.outputs.iac }}
-      ps: ${{ steps.filter.outputs.ps }}
-    steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          iac:
-            - 'iac/**'
-          ps:
-            - 'ps/**'
-        base: ${{ github.ref }}
+    uses: ./.github/workflows/template-detect-change.yaml
+#    runs-on: ubuntu-latest
+#    outputs:
+#      iac: ${{ steps.filter.outputs.iac }}
+#      ps: ${{ steps.filter.outputs.ps }}
+#    steps:
+#    - uses: actions/checkout@v3
+#    - uses: dorny/paths-filter@v2
+#      id: filter
+#      with:
+#        filters: |
+#          iac:
+#            - 'iac/**'
+#          ps:
+#            - 'ps/**'
+#        base: ${{ github.ref }}
 
   build-iac:
     needs: detect-change
@@ -33,6 +34,7 @@ jobs:
     uses: ./.github/workflows/template-build.yaml
     with:
       artifacttype: 'iac'
+    secrets: inherit
 
   build-ps:
     needs: detect-change
@@ -40,6 +42,7 @@ jobs:
     uses: ./.github/workflows/template-build.yaml
     with:
       artifacttype: 'ps'
+    secrets: inherit      
 
   plan-integration-iac:
     needs: build-iac
@@ -47,6 +50,7 @@ jobs:
     with:
       doenv: 'integration-plan'
       workflowtype: iac
+    secrets: inherit      
 
   apply-integration-iac:
     needs: [build-iac,plan-integration-iac]
@@ -54,6 +58,7 @@ jobs:
     with:
       doenv: 'Integration'
       workflowtype: iac
+    secrets: inherit      
   
   apply-integration-ps:
     needs: [build-ps, plan-integration-iac, apply-integration-iac]
@@ -62,3 +67,4 @@ jobs:
     with:
       doenv: 'Integration'
       workflowtype: ps
+    secrets: inherit      
