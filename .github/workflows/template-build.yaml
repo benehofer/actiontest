@@ -1,0 +1,45 @@
+name: Deploy IAC
+
+on:
+  workflow_call:
+    inputs:
+      artifacttype:
+        required: true
+        type: string
+      artifactname:
+        required: true
+        type: string
+      
+
+jobs:
+  build-ps:
+    runs-on: windows-latest
+    if: ${{ inputs.artifacttype == 'ps'}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ inputs.artifacttype }}
+        shell: pwsh
+        run: .\devops\ps\build.ps1
+        env:
+            mode: 'plan'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{  inputs.artifactname }}
+          path: deployment\${{ inputs.artifacttype }}\**
+          retention-days: 5
+
+  build-iac:
+    runs-on: windows-latest
+    if: ${{ inputs.artifacttype == 'iac'}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ inputs.artifacttype }}
+        shell: pwsh
+        run: .\devops\iac\build.ps1
+        env:
+            mode: 'plan'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{  inputs.artifactname }}
+          path: deployment\${{ inputs.artifacttype }}\**
+          retention-days: 5

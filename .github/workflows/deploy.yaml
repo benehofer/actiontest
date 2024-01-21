@@ -45,25 +45,30 @@ jobs:
           retention-days: 5
 
   build-ps:
-    runs-on: windows-latest
+#    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build ps
-        shell: pwsh
-        run: .\devops\ps\build.ps1
-        env:
-            mode: 'plan'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ps-build
-          path: deployment\ps\**
-          retention-days: 5    
+    uses: ./.github/workflows/template-deploy-iac.yaml
+    with:
+      artifacttype: 'ps'
+      artifactname: 'ps-build'
+
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Build ps
+#        shell: pwsh
+#        run: .\devops\ps\build.ps1
+#        env:
+#            mode: 'plan'
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: ps-build
+#          path: deployment\ps\**
+#          retention-days: 5    
 
   plan-integration-iac:
     needs: build-iac
-    uses: ./.github/workflows/templates/deploy-iac.yaml
+    uses: ./.github/workflows/template-deploy-iac.yaml
     with:
       artifactname: 'iac-build'
 #    steps:
