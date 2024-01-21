@@ -5,7 +5,10 @@ on:
     inputs:
       artifacttype:
         required: true
-        type: string
+        type: choice
+        options:
+          - ps
+          - iac
 
 jobs:
   build:

@@ -6,9 +6,12 @@ on:
       doenv:
         required: true
         type: string
-      artifactname:
+      workflowtype:
         required: true
-        type: string
+        type: choice
+        options:
+          - ps
+          - iac
 
 jobs:
   deploy:
@@ -21,10 +24,10 @@ jobs:
             devops
       - uses: actions/download-artifact@v4
         with:
-          name: ${{  inputs.artifactname  }}
-      - name: Build iac
+          name: ${{  inputs.workflowtype  }}-build
+      - name: Build ${{  inputs.workflowtype  }}
         shell: pwsh
-        run: .\devops\iac\deploy.ps1
+        run: .\devops\${{  inputs.workflowtype  }}\deploy.ps1
         env:
           mode: 'plan'
           environment: 'WagnerTest'  

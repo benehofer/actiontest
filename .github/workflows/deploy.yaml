@@ -46,14 +46,14 @@ jobs:
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
       doenv: 'integration-plan'
-      artifactname: 'iac-build'
+      workflowtype: iac
 
   apply-integration-iac:
-    needs: build-iac
+    needs: [build-iac,plan-integration-iac]
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
       doenv: 'Integration'
-      artifactname: 'iac-build'
+      workflowtype: iac
   
   apply-integration-ps:
     runs-on: windows-latest
