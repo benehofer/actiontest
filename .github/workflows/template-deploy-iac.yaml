@@ -8,10 +8,7 @@ on:
         type: string
       workflowtype:
         required: true
-        type: choice
-        options:
-          - ps
-          - iac
+        type: string
 
 jobs:
   deploy:
