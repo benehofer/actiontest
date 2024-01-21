@@ -32,6 +32,7 @@ jobs:
   plan-integration-iac:
     needs: build-iac
     permissions:
+      contents: 'read'
       id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
@@ -42,6 +43,7 @@ jobs:
   apply-integration-iac:
     needs: [build-iac,plan-integration-iac]
     permissions:
+      contents: 'read'
       id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
@@ -53,6 +55,7 @@ jobs:
     needs: [build-ps, plan-integration-iac, apply-integration-iac]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
     permissions:
+      contents: 'read'
       id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
