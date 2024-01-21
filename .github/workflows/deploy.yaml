@@ -63,7 +63,7 @@ jobs:
 
   plan-integration-iac:
     needs: build-iac
-    uses: ./.github/workflows/template-deploy-iac.yaml
+    uses: ./.github/workflows/templates/deploy-iac.yaml
     with:
       artifactname: 'iac-build'
 #    steps:
