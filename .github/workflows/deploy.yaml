@@ -51,7 +51,6 @@ jobs:
     uses: ./.github/workflows/template-build.yaml
     with:
       artifacttype: 'ps'
-      artifactname: 'ps-build'
 
 #    steps:
 #      - uses: actions/checkout@v4
