@@ -1,0 +1,542 @@
+{
+    "default": {
+        "target_subscription_id" : {
+            "description": "Target subscription id",
+            "type": "string"
+        },
+        "tenant_id": {
+            "description": "Target tenant id",
+            "type": "string"
+        },
+        "tenant_name": {
+            "description": "Target tenant name",
+            "type": "string"
+        },
+        "location": {
+            "description": "Location for resources of the deployment",
+            "type": "string",
+            "value": "switzerlandnorth"
+        },
+        "resource_group_name": {
+            "description": "The name of the resource group for the resources of the deployment",
+            "type": "string",
+            "schema": {
+                "WIDDEV": "rg-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-rg-{projectshortname}-{instance}",
+                "WagnerProd": "wid-rg-{projectshortname}-{instance}"
+            }
+        },
+        "storage_account_name": {
+            "description": "The name of the storage account",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "sa{ownershortname}{projectshortname}{stageshortname}{locationshortname}{instance}",
+                "WagnerTest": "widsa{projectshortname}{instance}",
+                "WagnerProd": "widst{projectshortname}{instance}"
+            }
+        },
+        "storage_account_job_queue_name" :{
+            "description": "The name of the job queue",
+            "type": "string",
+            "value": "jobqueue"
+        },
+        "storage_account_snow_queue_name" :{
+            "description": "The name of the snow queue",
+            "type": "string",
+            "value": "snowqueue"
+        },
+        "storage_account_dv_queue_name" :{
+            "description": "The name of the dv queue",
+            "type": "string",
+            "value": "dvqueue"
+        },
+        "storage_account_bc_queue_name" :{
+            "description": "The name of the bc queue",
+            "type": "string",
+            "value": "bcqueue"
+        },
+        "storage_account_ad_queue_name" :{
+            "description": "The name of the ad queue",
+            "type": "string",
+            "value": "adqueue"
+        },
+        "storage_account_apischema_table_name" :{
+            "description": "The name of the schema table",
+            "type": "string",
+            "value": "apischema"
+        },
+        "storage_account_syncjob_table_name" :{
+            "description": "The name of the syncjob table",
+            "type": "string",
+            "value": "syncjob"
+        },
+        "storage_account_department_table_name" :{
+            "description": "The name of the department table",
+            "type": "string",
+            "value": "department"
+        },
+        "storage_account_cache_container_name" :{
+            "description": "The name of the cache blob container",
+            "type": "string",
+            "value": "cacheblob"
+        },
+        "storage_account_sku_name" :{
+            "description": "The name of the SKU for the storage account",
+            "type": "string",
+            "value": "Standard_LRS"
+        },
+        "managed_identity_name": {
+            "description": "The name of the managed identity of the Azure function",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "id-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-id-{projectshortname}-{instance}",
+                "WagnerProd": "wid-id-{projectshortname}-{instance}"
+            }
+        },
+        "storageblobdatacontributor_role_id": {
+            "description": "The id of the storage blob data contributor role",
+            "type": "string",
+            "value": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+        },
+        "storagetabledatacontributor_role_id": {
+            "description": "The id of the storage table data contributror role",
+            "type": "string",
+            "value": "0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3"
+        },
+        "storagequeuedatacontributor_role_id": {
+            "description": "The id of the storage queue data contributror role",
+            "type": "string",
+            "value": "974c5e8b-45b9-4653-ba55-5f855dd0fb88"
+        },
+        "api_base_url": {
+            "description": "The base url of the function app",
+            "type": "string",
+            "schema": {
+                "WIDDEV": "https://{function_app_name}.azurewebsites.net/",
+                "WagnerTest": "https://{function_app_name}.azurewebsites.net/",
+                "WagnerProd": "https://{function_app_name}.azurewebsites.net/"
+            }
+        },
+        "log_analytics_workspace_name": {
+            "description": "The name of the log analytics workspace used by application inights resource the Azure function",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "log-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-log-{projectshortname}-{instance}",
+                "WagnerProd": "wid-law-{projectshortname}-{instance}"
+            }
+        },
+        "application_insigths_name": {
+            "description": "The name of the the application insights resource",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "appi-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-appi-{projectshortname}-{instance}",
+                "WagnerProd": "wid-appi-{projectshortname}-{instance}"
+            }
+        },
+        "service_plan_sku_name": {
+            "description": "The SKU name for the app service plan",
+            "type": "string",
+            "value": "EP1"
+        },
+        "service_plan_sku_family": {
+            "description": "The SKU family name for the app service plan",
+            "type": "string",
+            "value": "EP"
+        },
+        "service_plan_sku_tier": {
+            "description": "The tier name for the app service plan",
+            "type": "string",
+            "value": "ElasticPremium"
+        },        
+        "function_app_name": {
+            "description": "The name of the Azure function app",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "func-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-func-{projectshortname}-{instance}",
+                "WagnerProd": "wid-func-{projectshortname}-{instance}"
+            }
+        },
+        "app_service_plan_name": {
+            "description": "The name of the app service plan for the Azure function",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "plan-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-plan-{projectshortname}-{instance}",
+                "WagnerProd": "wid-plan-{projectshortname}-{instance}"
+            }
+        },
+        "function_app_vnet_integration_subnet_id": {
+            "description": "The resource id of the subnet for the function app integration",
+            "type": "string"
+        },
+        "relay_namespace_name": {
+            "description": "The name of the relay namespace for the hybrid connection",
+            "type": "string",
+            "schema": {
+                "WIDDEV": "rns-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-rns-{projectshortname}-{instance}",
+                "WagnerProd": "wid-rln-{projectshortname}-{instance}"
+            }
+        },
+        "hybrid_connection_name": {
+            "description": "The name of the hybrid connection",
+            "type": "string",
+            "schema": {
+                "WIDDEV": "hycon-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-hycon-{projectshortname}-{instance}",
+                "WagnerProd": "wid-rlhc-{projectshortname}-{instance}"
+            }
+        },
+        "hycon_adserver_name": {
+            "description": "The fqdn of the ad server name used in the hybrid connection",
+            "type": "string"
+        },
+        "hycon_adserver_port": {
+            "description": "The port of the ad server used in the hybrid connection",
+            "type": "int",
+            "value": 5986
+        },
+        "ad_username_kvsecretname": {
+            "description": "The key vault secret name for the username of the ADDS user (admin)",
+            "type": "string",
+            "value": "adusername"
+        },
+        "ad_userpassword_kvsecretname": {
+            "description": "The key vault secret name for the password of the ADDS user (admin)",
+            "type": "string",
+            "value": "aduserpassword"
+        },
+        "ad_username": {
+            "description": "The username of the ADDS user (admin)",
+            "type": "string",
+            "secure": true
+        },
+        "ad_userpassword": {
+            "description": "The password of the ADDS user (admin)",
+            "type": "string",
+            "secure": true
+        },
+        "ad_useroupath": {
+            "description": "The ou path in LDAP notation for ADDS user objects",
+            "type": "string"
+        },
+        "ad_groupoupath": {
+            "description": "The ou path in LDAP notation for ADDS group objects",
+            "type": "string"
+        },
+        "ad_assignmentgroup_prefix": {
+            "description": "The groupname prefix for assignemt groups in ADDS",
+            "type": "string"
+        },
+        "keyvault_name": {
+            "description": "The name of the Azure keyvault",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "vault-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-vault-{projectshortname}-{instance}",
+                "WagnerProd": "wid-kv-{projectshortname}-{instance}"
+            }        
+        },        
+        "keyvaultsecretsuser_role_id": {
+            "description": "The id of the vault secrets user role",
+            "type": "string",
+            "value": "4633458b-17de-408a-b874-0445c86b69e6"
+        },
+        "keyvaultsecretsofficer_role_id": {
+            "description": "The id of the vault secrets officer role",
+            "type": "string",
+            "value": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7"
+        },
+        "keyvaultadministrator_role_id": {
+            "description": "The id of the vault administrator role",
+            "type": "string",
+            "value": "00482a5a-887f-4fb3-b363-3b7fe8e74483"
+        },
+        "bc_sp_clientid": {
+            "description": "The id of the service principal for accessing the bc environment",
+            "type": "string",
+            "value": "fb69fb7c-6a0c-41bf-b3d0-2d56fef22081"
+        },
+        "bc_sp_kvsecretname": {
+            "description": "The name of the bc service principal secret in key vault",
+            "type": "string",
+            "value": "bcsecret"
+        },
+        "bc_url_jobhead": {
+            "description": "The bc api url for the jobheads entity",
+            "type": "string"
+        },
+        "bc_url_jobtask": {
+            "description": "The bc api url for the jobtasks entity",
+            "type": "string"
+        },
+        "bc_url_jobplanningline": {
+            "description": "The bc api url for the jobplanninglines entity",
+            "type": "string"
+        },
+        "bc_url_debitor": {
+            "description": "The bc api url for the debitor (customers) entity",
+            "type": "string"
+        },
+        "bc_url_journal": {
+            "description": "The bc api url for the journal entity",
+            "type": "string"
+        },
+        "bc_url_jobworksheet": {
+            "description": "The bc api url for the jobworksheet entity",
+            "type": "string"
+        },
+        "bc_url_employee": {
+            "description": "The bc api url for the employe entity",
+            "type": "string"
+        },
+        "bc_url_jobledger": {
+            "description": "The bc api url for the jobledger entity",
+            "type": "string"
+        },
+        "bc_queuebatchsize": {
+            "description": "The max number of bc records processed in one batch",
+            "type": "int",
+            "value": 300
+        },
+        "crm_environment_url" :{
+            "description": "The url of the CRM environment",
+            "type": "string"
+        },
+        "dv_environment_url" :{
+            "description": "The url of the Dataverse environment",
+            "type": "string"
+        },
+        "dv_environment_id": {
+            "description": "The dataverse environment id",
+            "type": "string"
+        },
+        "dv_environment_solutionname": {
+            "description": "The dataverse solution name",
+            "type": "string"
+        },
+        "dv_environment_publisherprefix": {
+            "description": "The dataverse publisher prefix",
+            "type": "string"
+        },
+        "snow_token_kvsecretname": {
+            "description": "The name of the basic token for SNOW api authentication (user:pass in base64) secret in key vault",
+            "type": "string",
+            "value": "snowtoken"
+        },
+        "snow_admin_token_kvsecretname": {
+            "description": "The name of the admin token for SNOW api authentication (user:pass in base64) secret in key vault",
+            "type": "string",
+            "value": "snowadmintoken"
+        },
+        "snow_admin2_token_kvsecretname": {
+            "description": "The name of the admin2 token for SNOW api authentication (user:pass in base64) secret in key vault",
+            "type": "string",
+            "value": "snowadmin2token"
+        },
+        "snow_url_jobhead": {
+            "description": "The snow api url for the jobheads entity",
+            "type": "string"
+        },
+        "snow_url_jobtask": {
+            "description": "The snow api url for the jobtasks entity",
+            "type": "string"
+        },
+        "snow_url_jobplanningline": {
+            "description": "The snow api url for the jobplanninglines entity",
+            "type": "string"
+        },
+        "snow_url_debitor": {
+            "description": "The snow api url for the debitor entity",
+            "type": "string"
+        },
+        "snow_table_url_debitor": {
+            "description": "The snow api table url for the debitor entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "snow_table_url_jobhead": {
+            "description": "The snow api table url for the jobhead entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "snow_table_url_jobtask": {
+            "description": "The snow api table url for the jobtask entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "snow_table_url_jobplanningline": {
+            "description": "The snow api table url for the jobplanningline entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "snow_table_url_journal": {
+            "description": "The snow api table url for the timecard entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "snow_table_url_outbound_message": {
+            "description": "The snow api table url for the outbound message entity; this url is used to check for consistency",
+            "type": "string"
+        },
+        "dv_url_jobhead": {
+            "description": "The dv api url for the jobheads entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_jobheads"
+        },
+        "dv_url_jobtask": {
+            "description": "The dv api url for the jobtasks entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_jobtasks"
+        },
+        "dv_url_jobplanningline": {
+            "description": "The dv api url for the jobplanninglines entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_jobplanninglines"
+        },
+        "dv_url_debitor": {
+            "description": "The dv api url for the debitor entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_debitors"
+        },
+        "dv_url_journal": {
+            "description": "The dv api url for the journal entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_journals"
+        },
+        "dv_url_employee": {
+            "description": "The dv api url for the employee entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_employees"
+        },
+        "dv_url_statistic": {
+            "description": "The dv api url for the statistic entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_statistics"
+        },
+        "dv_url_statisticrun": {
+            "description": "The dv api url for the statisticrun entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_statisticruns"
+        }
+    },
+    "WIDDEV": {
+        "target_subscription_id" : {"value": "281a469b-3f25-4913-9644-efb65d48a83f"},
+        "tenant_id": {"value": "f6819965-9fb4-4295-b341-4d250431078c"},
+        "tenant_name":{"value": "wid.dev"},
+        "ownershortname":{"value": "hofb"},
+        "projectshortname":{"value": "wup"},
+        "stageshortname":{"value": "tst"},
+        "locationshortname":{"value": "sn"},
+        "instance":{"value": "01"},
+        "function_app_vnet_integration_subnet_id":{"value": "/subscriptions/281a469b-3f25-4913-9644-efb65d48a83f/resourceGroups/rg-hofb-net-shd-sn-01/providers/Microsoft.Network/virtualNetworks/vnet-hofb-net-shd-sn-01/subnets/snet-with-webserverfarm-delegation"},
+        "hycon_adserver_name": {"value": "adserver"},
+        "ad_username": {"value": "admin"},
+        "ad_userpassword": {"value": "dummy"},
+        "ad_useroupath": {"value": "cn=Users,dc=testwid,dc=local"},
+        "ad_groupoupath": {"value": "cn=Users,dc=testwid,dc=local"},
+        "ad_assignmentgroup_prefix": {"value": "GG_"},
+        "crm_environment_url" :{"value": "https://org818ba903.crm17.dynamics.com"},
+        "dv_environment_url" :{"value": "https://org159ce083.crm17.dynamics.com"},
+        "dv_environment_id" :{"value": "Default-f6819965-9fb4-4295-b341-4d250431078c"},
+        "dv_environment_solutionname": {"value": "widup"},
+        "dv_environment_publisherprefix": {"value": "widup"},
+        "bc_url_jobhead": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobsHeaders"},
+        "bc_url_jobtask": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobTasks"},
+        "bc_url_jobplanningline": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobPlanningLines"},
+        "bc_url_debitor": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/customer/v1.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/customers"},
+        "bc_url_journal": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals"},
+        "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
+        "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
+        "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
+        "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
+        "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
+        "snow_url_debitor": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_debitor"},
+        "snow_table_url_debitor": {"value": ""},
+        "snow_table_url_jobhead": {"value": ""},
+        "snow_table_url_jobtask": {"value": ""},
+        "snow_table_url_jobplanningline": {"value": ""},
+        "snow_table_url_journal": {"value": ""},
+        "snow_table_url_outbound_message": {"value": ""}
+    },
+    "WagnerTest": {
+        "target_subscription_id" : {"value": "045e4288-7f9b-4c88-b100-9e837bb80e50"},
+        "tenant_id": {"value": "f72f8eb9-210d-48d8-b271-69513506293e"},
+        "tenant_name":{"value": "wagner.ch"},
+        "ownershortname":{"value": "hofb"},
+        "projectshortname":{"value": "widup"},
+        "stageshortname":{"value": "tst"},
+        "locationshortname":{"value": "sn"},
+        "instance":{"value": "201"},
+        "function_app_vnet_integration_subnet_id":{"value": ""},
+        "hycon_adserver_name": {"value": "scwidmgt99"},
+        "ad_username": {"value": "CHWID\\\\widup"},
+        "ad_userpassword": {"value": "dummy"},
+        "ad_useroupath": {"value": "ou=snowusers,ou=onprem,ou=chwid,dc=chwid,dc=local"},
+        "ad_groupoupath": {"value": "ou=Snowgroups,ou=groups,ou=datacenter,ou=chwid,dc=chwid,dc=local"},
+        "ad_assignmentgroup_prefix": {"value": "GG_"},
+        "crm_environment_url" :{"value": "https://wagner-test.crm4.dynamics.com"},
+        "dv_environment_url" :{"value": "https://org64c87f92.crm17.dynamics.com"},
+        "dv_environment_id" :{"value": "23fa6d4b-fb30-e2ae-873f-33b560a4f055"},
+        "dv_environment_solutionname": {"value": "widup"},
+        "dv_environment_publisherprefix": {"value": "widup"},
+        "bc_url_jobhead": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobsHeaders"},
+        "bc_url_jobtask": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobTasks"},
+        "bc_url_jobplanningline": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobPlanningLines"},
+        "bc_url_debitor": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/customer/v1.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/customers"},        
+        "bc_url_journal": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals"},
+        "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
+        "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
+        "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
+        "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
+        "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
+        "snow_url_debitor": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_debitor"},
+        "snow_table_url_debitor": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/core_company"},
+        "snow_table_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/ast_service"},
+        "snow_table_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/u_article"},
+        "snow_table_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/u_cmdb_ci_project_plan_item"},
+        "snow_table_url_journal": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/time_card"},
+        "snow_table_url_outbound_message": {"value": "https://wagnerdev.service-now.com/api/now/v2/table/u_if_outbound_message"}
+    },
+    "WagnerProd": {
+        "target_subscription_id" : {"value": "6178e425-5861-4d3d-99e2-31bb2175fb11"},
+        "tenant_id": {"value": "f72f8eb9-210d-48d8-b271-69513506293e"},
+        "tenant_name":{"value": "wagner.ch"},
+        "ownershortname":{"value": "hofb"},
+        "projectshortname":{"value": "widup"},
+        "stageshortname":{"value": "prd"},
+        "locationshortname":{"value": "sn"},
+        "instance":{"value": "001"},
+        "function_app_vnet_integration_subnet_id":{"value": ""},
+        "hycon_adserver_name": {"value": "scwidapp11"},
+        "ad_username": {"value": "CHWID\\\\sa-widup"},
+        "ad_userpassword": {"value": "dummy"},
+        "ad_useroupath": {"value": "ou=users,ou=onprem,ou=chwid,dc=chwid,dc=local"},
+        "ad_groupoupath": {"value": "ou=ServiceNow,ou=organisationgroups,ou=groups,ou=datacenter,ou=chwid,dc=chwid,dc=local"},
+        "ad_assignmentgroup_prefix": {"value": "GG_"},
+        "crm_environment_url" :{"value": "https://wagner.crm4.dynamics.com"},
+        "dv_environment_url" :{"value": "https://org0c5d3056.crm17.dynamics.com"},
+        "dv_environment_id" :{"value": "ee997d09-2c47-e201-9b9b-8d04658d4258"},
+        "dv_environment_solutionname": {"value": "widup"},
+        "dv_environment_publisherprefix": {"value": "widup"},
+        "bc_url_jobhead": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobsHeaders"},
+        "bc_url_jobtask": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobTasks"},
+        "bc_url_jobplanningline": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobPlanningLines"},
+        "bc_url_debitor": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/customer/v1.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/customers"},
+        "bc_url_journal": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals"},
+        "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
+        "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
+        "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "snow_url_jobhead": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektkopf"},
+        "snow_url_jobtask": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
+        "snow_url_jobplanningline": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
+        "snow_url_debitor": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_debitor"},
+        "snow_table_url_debitor": {"value": "https://wagner.service-now.com/api/now/v2/table/core_company"},
+        "snow_table_url_jobhead": {"value": "https://wagner.service-now.com/api/now/v2/table/ast_service"},
+        "snow_table_url_jobtask": {"value": "https://wagner.service-now.com/api/now/v2/table/u_article"},
+        "snow_table_url_jobplanningline": {"value": "https://wagner.service-now.com/api/now/v2/table/u_cmdb_ci_project_plan_item"},
+        "snow_table_url_journal": {"value": "https://wagner.service-now.com/api/now/v2/table/time_card"},
+        "snow_table_url_outbound_message": {"value": "https://wagner.service-now.com/api/now/v2/table/u_if_outbound_message"}
+    }
+}
