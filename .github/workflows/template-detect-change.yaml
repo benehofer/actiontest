@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  detect-change:
+  paths-filter:
     runs-on: ubuntu-latest
     outputs:
       iac: ${{ steps.filter.outputs.iac }}
