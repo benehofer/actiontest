@@ -65,20 +65,24 @@ jobs:
     runs-on: windows-latest
     environment: integration-plan
     needs: build-iac
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: iac-build
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\deploy.ps1
-        env:
-          mode: 'plan'
-          environment: 'WagnerTest'
+    call-workflow-passing-data:
+      uses: .github\workflows\template-deploy-iac.yaml
+      with:
+        artifactname: 'iac-build'
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          sparse-checkout: |
+#            devops
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: iac-build
+#      - name: Build iac
+#        shell: pwsh
+#        run: .\devops\iac\deploy.ps1
+#        env:
+#          mode: 'plan'
+#          environment: 'WagnerTest'
 
   apply-integration-iac:
     runs-on: windows-latest
