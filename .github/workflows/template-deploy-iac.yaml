@@ -11,16 +11,17 @@ jobs:
   deploy:
     runs-on: windows-latest
     environment: integration-plan
-    - uses: actions/checkout@v4
-      with:
-        sparse-checkout: |
-          devops
-    - uses: actions/download-artifact@v4
-      with:
-        name: ${{  inputs.artifactname  }}
-    - name: Build iac
-      shell: pwsh
-      run: .\devops\iac\deploy.ps1
-      env:
-        mode: 'plan'
-        environment: 'WagnerTest'  
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            devops
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{  inputs.artifactname  }}
+      - name: Build iac
+        shell: pwsh
+        run: .\devops\iac\deploy.ps1
+        env:
+          mode: 'plan'
+          environment: 'WagnerTest'  
