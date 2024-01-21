@@ -43,34 +43,22 @@ jobs:
 
   plan-integration-iac:
     needs: build-iac
-    uses: ./.github/workflows/template-deploy-iac.yaml
+    uses: ./.github/workflows/template-deploy.yaml
     with:
       doenv: 'integration-plan'
       workflowtype: iac
 
   apply-integration-iac:
     needs: [build-iac,plan-integration-iac]
-    uses: ./.github/workflows/template-deploy-iac.yaml
+    uses: ./.github/workflows/template-deploy.yaml
     with:
       doenv: 'Integration'
       workflowtype: iac
   
   apply-integration-ps:
-    runs-on: windows-latest
-    environment: integration
     needs: [build-ps, plan-integration-iac, apply-integration-iac]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: ps-build
-      - name: Build ps
-        shell: pwsh
-        run: .\devops\ps\deploy.ps1
-        env:
-          mode: 'apply'
-          environment: 'Integration'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'Integration'
+      workflowtype: ps
