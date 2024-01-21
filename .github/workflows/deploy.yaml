@@ -45,14 +45,14 @@ jobs:
     needs: build-iac
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
-      doenv: 'Integration-plan'
+      doenv: integration-plan
       artifactname: 'iac-build'
 
   apply-integration-iac:
     needs: build-iac
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
-      doenv: 'Integration'
+      doenv: Integration
       artifactname: 'iac-build'
   
   apply-integration-ps:

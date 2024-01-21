@@ -5,7 +5,7 @@ on:
     inputs:
       doenv:
         required: true
-        type: string
+        type: environment
       artifactname:
         required: true
         type: string
