@@ -65,10 +65,9 @@ jobs:
     runs-on: windows-latest
     environment: integration-plan
     needs: build-iac
-    call-workflow-passing-data:
-      uses: ./.github/workflows/template-deploy-iac.yaml
-      with:
-        artifactname: 'iac-build'
+    uses: ./.github/workflows/template-deploy-iac.yaml
+    with:
+      artifactname: 'iac-build'
 #    steps:
 #      - uses: actions/checkout@v4
 #        with:
