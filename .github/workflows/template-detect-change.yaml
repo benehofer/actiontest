@@ -2,6 +2,11 @@ name: Detect change in repos
 
 on:
   workflow_call:
+    outputs:
+      iac:
+        value: ${{  jobs.paths-filter.outputs.iac  }}
+      ps:
+        value: ${{  jobs.paths-filter.outputs.ps  }}
 
 jobs:
   paths-filter:
