@@ -28,81 +28,32 @@ jobs:
         base: ${{ github.ref }}
 
   build-iac:
-    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\build.ps1
-        env:
-            environment: 'WagnerTest'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: iac-build
-          path: deployment\iac\**
-          retention-days: 5
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      artifacttype: 'iac'
 
   build-ps:
-#    runs-on: windows-latest
     needs: detect-change
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
       artifacttype: 'ps'
 
-#    steps:
-#      - uses: actions/checkout@v4
-#      - name: Build ps
-#        shell: pwsh
-#        run: .\devops\ps\build.ps1
-#        env:
-#            mode: 'plan'
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          name: ps-build
-#          path: deployment\ps\**
-#          retention-days: 5    
-
   plan-integration-iac:
     needs: build-iac
     uses: ./.github/workflows/template-deploy-iac.yaml
     with:
+      doenv: 'Integration-plan'
       artifactname: 'iac-build'
-#    steps:
-#      - uses: actions/checkout@v4
-#        with:
-#          sparse-checkout: |
-#            devops
-#      - uses: actions/download-artifact@v4
-#        with:
-#          name: iac-build
-#      - name: Build iac
-#        shell: pwsh
-#        run: .\devops\iac\deploy.ps1
-#        env:
-#          mode: 'plan'
-#          environment: 'WagnerTest'
 
   apply-integration-iac:
-    runs-on: windows-latest
-    environment: Integration
-    needs: [build-iac, plan-integration-iac]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            devops
-      - uses: actions/download-artifact@v4
-        with:
-          name: iac-build
-      - name: Build iac
-        shell: pwsh
-        run: .\devops\iac\deploy.ps1
-        env:
-          mode: 'apply'
-          environment: 'WagnerTest'
+    needs: build-iac
+    uses: ./.github/workflows/template-deploy-iac.yaml
+    with:
+      doenv: 'Integration'
+      artifactname: 'iac-build'
   
   apply-integration-ps:
     runs-on: windows-latest

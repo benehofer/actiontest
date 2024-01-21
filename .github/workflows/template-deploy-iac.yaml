@@ -3,6 +3,9 @@ name: Deploy IAC
 on:
   workflow_call:
     inputs:
+      doenv:
+        required: true
+        type: string
       artifactname:
         required: true
         type: string
@@ -10,7 +13,7 @@ on:
 jobs:
   deploy:
     runs-on: windows-latest
-    environment: integration-plan
+    environment: {{  inputs.doenv  }}
     steps:
       - uses: actions/checkout@v4
         with:
