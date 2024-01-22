@@ -6,9 +6,6 @@ on:
       artifacttype:
         required: true
         type: string
-      appEnv:
-        required: true
-        type: string
 
 jobs:
   build:
