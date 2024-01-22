@@ -3,6 +3,9 @@ name: Build code artifacts
 on:
   workflow_call:
     inputs:
+      doenv:
+        required: true
+        type: string
       artifacttype:
         required: true
         type: string
@@ -10,6 +13,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    environment: ${{  inputs.doenv  }}
     steps:
       - uses: actions/checkout@v4
       - name: Build ${{ inputs.artifacttype }}

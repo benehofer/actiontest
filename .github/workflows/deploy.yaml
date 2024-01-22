@@ -18,6 +18,7 @@ jobs:
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
+      doenv: 'integration'
       artifacttype: 'iac'
     secrets: inherit
 
@@ -26,6 +27,7 @@ jobs:
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
+      doenv: 'integration'
       artifacttype: 'ps'
     secrets: inherit      
 
