@@ -6,6 +6,9 @@ on:
       artifacttype:
         required: true
         type: string
+      appEnv:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -16,7 +19,7 @@ jobs:
         shell: pwsh
         run: .\devops\${{  inputs.artifacttype  }}\build.ps1
         env:
-            mode: 'plan'
+          appEnv: ${{  vars.APP_ENVIRONMENT  }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{  inputs.artifacttype }}-build

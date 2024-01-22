@@ -24,7 +24,7 @@ function Write-dplResult() {
     BEGIN {}
     PROCESS {
         switch ($result.LogLevel) {
-            "Information" {  
+            "Information" {
                 Write-Information  -MessageData $result.Message
                 break
             }
@@ -117,6 +117,36 @@ function Get-dplVariableDefinition() {
         $r=New-Result -success $true -message "Successfully loaded variable definition ($($variableDefFile))" -value $obj -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error loading variable definition ($($variableDefFile))" -exception $_.Exception -logLevel Error
+    }
+    $r
+}
+function Set-dplDirectory() {
+    param(
+        $variableDefinition,
+        $deploymentDirectory,
+        $bicepTemplateFile=".\iac\source.bicep",
+        $bicepOptionsFile=".\iac\bicepconfig.json"
+    )
+    try {
+        if (Test-Path $deploymentDirectory) {
+            remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
+        $bicepSource=gc -path $bicepTemplateFile -Raw -Encoding UTF8
+        $bicepSource=$($bicepVariableDefinition.variableString)+"`r`n"+"`r`n"+$bicepSource
+        $bicepSource | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\main.bicep"
+        
+        $s=""
+        $s+='az group create --name "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --location "' + $($bicepVariableDefinition.variables.location.value) + '"' + "`r`n"
+        $s+='az deployment group what-if --resource-group "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+        $s+='az deployment group create --resource-group "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\deploy.ps1"
+
+        Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
+        $r=New-Result -success $true -message "Successfully created deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message "Error creating deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
     }
     $r
 }

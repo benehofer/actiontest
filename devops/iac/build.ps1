@@ -1,9 +1,14 @@
 $targetEnvironmentName=$env:appEnv
 
 ipmo .\devops\helper.psm1
-
+$InformationPreference="Continue"
 
 $r=Get-dplVariableDefinition -targetEnvironmentName $targetEnvironmentName | Write-dplResult
+if ($r.Success) {
+    $variableDefinition=$r.Value
+    $r=Set-dplDirectory -variableDefinition $variableDefinition -deploymentDirectory ".\deployment\iac" | Write-dplResult
+}
 
-new-item .\deployment\iac -ItemType Directory
-"Test" | out-file .\deployment\iac\artifact_iac.txt
+if (!($r.Success)) {
+    throw
+}
