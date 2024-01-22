@@ -43,7 +43,7 @@ function Write-dplResult() {
                             Write-Error -Message $result.Message -Exception $result.Exception
                         }
                     } else {
-                        Write-Error -Message $result.Message -Exception $result.Exception
+                        Write-Error -Message "$($result.Message): $($result.Exception.message)" -Exception $result.Exception
                     }
                 } else {
                     Write-Error -Message $result.Message

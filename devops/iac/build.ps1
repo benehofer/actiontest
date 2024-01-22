@@ -1,6 +1,6 @@
 $targetEnvironmentName=$env:appEnv
 
-ipmo .\devops\helper.psm1
+ipmo .\devops\helper.psm1 -force
 $InformationPreference="Continue"
 
 $r=Get-dplVariableDefinition -targetEnvironmentName $targetEnvironmentName | Write-dplResult
