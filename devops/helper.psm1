@@ -120,7 +120,7 @@ function Get-dplVariableDefinition() {
     }
     $r
 }
-function Set-dplDirectory() {
+function Set-dplDirectoryIac() {
     param(
         $variableDefinition,
         $deploymentDirectory,
@@ -144,9 +144,43 @@ function Set-dplDirectory() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\deploy.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
-        $r=New-Result -success $true -message "Successfully created deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
+        $r=New-Result -success $true -message "Successfully created iac deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
-        $r=New-Result -success $false -message "Error creating deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
+        $r=New-Result -success $false -message "Error creating iac deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
     }
     $r
+}
+
+function Set-dplDirectoryPS() {
+    param(
+        $variableDefinition,
+        $deploymentDirectory
+    )
+    try {
+        if (Test-Path $deploymentDirectory) {
+            remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
+        $solutionBasePath="Azure Functions",
+        $rgName=$v.variables.resource_group_name.value
+        $funcName=$v.variables.function_app_name.value
+        $zipPath="$($deploymentDirectory)\$($funcName).zip"
+        Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+
+        $functionNames=gci -path $solutionBasePath -Directory | select name,@{name="isfunctiondir";expression={Test-Path "$($_.fullname)\function.json"}} | ? {$_.isfunctionDir -eq $true} | select -ExpandProperty name
+
+        Get-Item -Path "$solutionBasePath\requirements.psd1" | Compress-Archive -DestinationPath $zipPath
+        Get-Item -Path "$solutionBasePath\profile.ps1" | Compress-Archive -DestinationPath $zipPath -Update
+        Get-Item -Path "$solutionBasePath\host.json" | Compress-Archive -DestinationPath $zipPath -Update
+        Get-Item -Path "$solutionBasePath\local.settings.json" | Compress-Archive -DestinationPath $zipPath -Update
+        $functionNames | %{
+            Get-Item -Path "$solutionBasePath\$($_)" | Compress-Archive -DestinationPath $zipPath -Update
+        }
+        Get-Item -Path "$solutionBasePath\Modules" | Compress-Archive -DestinationPath $zipPath -Update
+        $r=New-Result -success $true -message "Successfully created ps deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message "Error creating ps deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
+    }
+    $r
+    #az functionapp deployment source config-zip -g $rgname -n $funcname --src $zipPath
 }

@@ -21,6 +21,8 @@ jobs:
         run: .\devops\${{  inputs.artifacttype  }}\build.ps1
         env:
           appEnv: ${{  vars.APP_ENVIRONMENT  }}
+          doEnv: ${{  vars.DEVOPS_ENVIRONMENT  }}
+          dpDir: deployment\${{ inputs.artifacttype }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{  inputs.artifacttype }}-build

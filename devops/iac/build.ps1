@@ -1,12 +1,14 @@
-$targetEnvironmentName=$env:appEnv
+$appEnv=$env:appEnv
+$doEnv=$env:doEnv
+$dpDir=$env:dpDir
 
 ipmo .\devops\helper.psm1 -force
 $InformationPreference="Continue"
 
-$r=Get-dplVariableDefinition -targetEnvironmentName $targetEnvironmentName | Write-dplResult
+$r=Get-dplVariableDefinition -targetEnvironmentName $appEnv | Write-dplResult
 if ($r.Success) {
     $variableDefinition=$r.Value
-    $r=Set-dplDirectory -variableDefinition $variableDefinition -deploymentDirectory ".\deployment\iac" | Write-dplResult
+    $r=Set-dplDirectoryIac -variableDefinition $variableDefinition -deploymentDirectory $dpDir | Write-dplResult
 }
 
 if (!($r.Success)) {
