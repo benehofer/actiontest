@@ -3,5 +3,4 @@ $doEnv=$env:doEnv
 $mode=$env:mode
 
 Write-Host "Running iac deployment in $($mode) mode"
-gci
 $r=Invoke-Command -ScriptBlock  ($([ScriptBlock]::Create("&.\$($mode).ps1")))

@@ -188,6 +188,16 @@ function Set-dplDirectoryPS() {
             Get-Item -Path "$solutionBasePath\$($_)" | Compress-Archive -DestinationPath $zipPath -Update
         }
         Get-Item -Path "$solutionBasePath\Modules" | Compress-Archive -DestinationPath $zipPath -Update
+
+        $s='Write-Host -message "No plan mode for az functionapp deployment"'
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
+
+        $s=""
+        $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip")' + "`r`n"
+        $s+='@(0..$($output.length-1)) | %{' + "`r`n"
+        $s+='    Write-Host $output[$_]' + "`r`n"
+        $s+='}' + "`r`n"
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
         $r=New-Result -success $true -message "Successfully created ps deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error creating ps deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
