@@ -7,6 +7,18 @@ function New-Result() {
         [ValidateSet("Verbose","Information","Warning","Error")]$logLevel="Information"
     )
     if (($exception -ne $null) -and ($logLevel -eq "Information")) {$logLevel="Error"}
+    if ($null -ne $exception) {
+        if ($null -ne $exception.response) {
+            try {
+                $exception.Response.GetResponseStream().position=0
+                $responseMessage=$(New-object System.IO.StreamReader($Exception.Response.GetResponseStream())).ReadToEnd()
+                $message="$($message): $($responseMessage)"
+            } catch {
+            }
+        } else {
+            $message="$($message): $($exception.message)"
+        }
+    }
     [PSCustomObject]@{
         Success=$success
         Message=$message
@@ -25,33 +37,19 @@ function Write-dplResult() {
     PROCESS {
         switch ($result.LogLevel) {
             "Information" {
-                Write-Information  -MessageData $result.Message
+                Write-Host -Message $result.message -ForegroundColor Green
                 break
             }
             "Warning" {  
-                Write-Warning -Message $result.Message
+                Write-Host -Message $result.message -ForegroundColor DarkYellow
                 break
             }
             "Error" {
-                if ($null -ne $result.exception) {
-                    if ($null -ne $result.exception.response) {
-                        try {
-                            $result.Exception.Response.GetResponseStream().position=0
-                            $responseMessage=$(New-object System.IO.StreamReader($result.Exception.Response.GetResponseStream())).ReadToEnd()
-                            Write-Error -Message "$($result.Message): $($responseMessage)"
-                        } catch {
-                            Write-Error -Message $result.Message -Exception $result.Exception
-                        }
-                    } else {
-                        Write-Error -Message "$($result.Message): $($result.Exception.message)" -Exception $result.Exception
-                    }
-                } else {
-                    Write-Error -Message $result.Message
-                }            
+                Write-Host -Message $result.message -ForegroundColor Red
                 break
             }
             Default {
-                Write-Verbose -Message $result.Message -Verbose
+                Write-Host -Message $result.Message -ForegroundColor White
             }      
         }
         if (!$NoPassThru) {$result}
@@ -150,7 +148,6 @@ function Set-dplDirectoryIac() {
     }
     $r
 }
-
 function Set-dplDirectoryPS() {
     param(
         $variableDefinition,
