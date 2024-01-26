@@ -155,7 +155,7 @@ function Set-dplDirectoryIac() {
         $s+='}' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
-        Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
+        Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.json"
         $r=New-Result -success $true -message "Successfully created iac deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error creating iac deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
