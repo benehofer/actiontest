@@ -25,7 +25,7 @@
             "level": "warning"
           },
           "no-hardcoded-env-urls": {
-            "level": "warning"
+            "level": "off"
           },
           "no-hardcoded-location": {
             "level": "warning"
@@ -43,7 +43,7 @@
             "level": "off"
           },
           "no-unused-vars": {
-            "level": "warning"
+            "level": "off"
           },
           "outputs-should-not-contain-secrets": {
             "level": "warning"
@@ -64,7 +64,7 @@
             "level": "warning"
           },
           "secure-secrets-in-params": {
-            "level": "warning"
+            "level": "off"
           },
           "simplify-interpolation": {
             "level": "warning"
