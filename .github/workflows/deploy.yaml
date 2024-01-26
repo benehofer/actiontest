@@ -18,7 +18,7 @@ jobs:
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
-      doenv: 'integration'
+      doenv: 'integration-plan'
       artifacttype: 'iac'
     secrets: inherit
 
@@ -27,7 +27,7 @@ jobs:
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
-      doenv: 'integration'
+      doenv: 'integration-plan'
       artifacttype: 'ps'
     secrets: inherit      
 
@@ -49,7 +49,7 @@ jobs:
       id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
-      doenv: 'integration-plan'
+      doenv: 'integration'
       workflowtype: iac
     secrets: inherit      
   
