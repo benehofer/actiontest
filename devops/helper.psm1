@@ -141,12 +141,18 @@ function Set-dplDirectoryIac() {
         
         $s=""
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group what-if --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '"' + "`r`n"
+        $s+='$output=$(az deployment group what-if --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '")' + "`r`n"
+        $s+='@(0..$($output.length-1)) | %{' + "`r`n"
+        $s+='    Write-Host $output[$_]' + "`r`n"
+        $s+='}' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s=""
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '"' + "`r`n"
+        $s+='$output=$(az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '")' + "`r`n"
+        $s+='@(0..$($output.length-1)) | %{' + "`r`n"
+        $s+='    Write-Host $output[$_]' + "`r`n"
+        $s+='}' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
