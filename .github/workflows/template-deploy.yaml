@@ -9,6 +9,9 @@ on:
       workflowtype:
         required: true
         type: string
+      mode:
+        required: true
+        type: string
 
 jobs:
   deploy:
@@ -35,5 +38,6 @@ jobs:
         shell: pwsh
         run: .\devops\${{  inputs.workflowtype  }}\deploy.ps1
         env:
+          appEnv: ${{  vars.APP_ENVIRONMENT  }}
+          doEnv: ${{  vars.DEVOPS_ENVIRONMENT  }}
           mode: 'plan'
-          environment: 'WagnerTest'  

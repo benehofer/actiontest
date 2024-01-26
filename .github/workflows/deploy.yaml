@@ -40,6 +40,7 @@ jobs:
     with:
       doenv: 'integration-plan'
       workflowtype: iac
+      mode: plan
     secrets: inherit      
 
   apply-integration-iac:
@@ -51,6 +52,7 @@ jobs:
     with:
       doenv: 'integration'
       workflowtype: iac
+      mode: apply
     secrets: inherit      
   
   apply-integration-ps:
@@ -63,4 +65,5 @@ jobs:
     with:
       doenv: 'Integration'
       workflowtype: ps
+      mode: apply
     secrets: inherit      
