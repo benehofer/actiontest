@@ -161,7 +161,7 @@ function Set-dplDirectoryPS() {
             remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
         }
         New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
-        $solutionBasePath="Azure Functions"
+        $solutionBasePath="ps\Azure Functions"
         $rgName=$v.variables.resource_group_name.value
         $funcName=$v.variables.function_app_name.value
         $zipPath="$($deploymentDirectory)\$($funcName).zip"
