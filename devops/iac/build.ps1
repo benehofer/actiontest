@@ -1,6 +1,6 @@
 $appEnv=$env:appEnv
 $doEnv=$env:doEnv
-$dpDir=$env:dpDir
+#$dpDir=$env:dpDir
 
 ipmo .\devops\helper.psm1 -force
 $InformationPreference="Continue"
