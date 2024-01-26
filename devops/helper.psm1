@@ -136,17 +136,17 @@ function Set-dplDirectoryIac() {
         }
         New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
         $bicepSource=gc -path $bicepTemplateFile -Raw -Encoding UTF8
-        $bicepSource=$($bicepVariableDefinition.variableString)+"`r`n"+"`r`n"+$bicepSource
+        $bicepSource=$($variableDefinition.variableString)+"`r`n"+"`r`n"+$bicepSource
         $bicepSource | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\main.bicep"
         
         $s=""
-        $s+='az group create --name "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --location "' + $($bicepVariableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group what-if --resource-group "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+        $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
+        $s+='az deployment group what-if --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s=""
-        $s+='az group create --name "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --location "' + $($bicepVariableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group create --resource-group "' + $($bicepVariableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+        $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
+        $s+='az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
