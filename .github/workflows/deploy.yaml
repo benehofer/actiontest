@@ -49,7 +49,7 @@ jobs:
       id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
-      doenv: 'Integration'
+      doenv: 'integration-plan'
       workflowtype: iac
     secrets: inherit      
   
