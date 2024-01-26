@@ -40,4 +40,4 @@ jobs:
         env:
           appEnv: ${{  vars.APP_ENVIRONMENT  }}
           doEnv: ${{  vars.DEVOPS_ENVIRONMENT  }}
-          mode: 'plan'
+          mode: ${{  inputs.mode  }}

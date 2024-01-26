@@ -141,12 +141,12 @@ function Set-dplDirectoryIac() {
         
         $s=""
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group what-if --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+        $s+='az deployment group what-if --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '"' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s=""
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
-        $s+='az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "$($deploymentDirectory)\main.bicep" + '"' + "`r`n"
+        $s+='az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '"' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.bicep"
