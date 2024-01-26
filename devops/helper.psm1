@@ -62,6 +62,7 @@ function Get-dplVariableDefinition() {
         $targetEnvironmentName
     )
     try {
+        $errors=""
         $s=""
         $variableDef=$(gc -Path $variableDefFile -Raw) | ConvertFrom-Json
         $variables=$variableDef.Default
@@ -100,7 +101,7 @@ function Get-dplVariableDefinition() {
         $variables | get-member -MemberType NoteProperty | select -ExpandProperty name | %{
             $variable=$_
             if ($null -eq $variables.$($variable).value) {
-                Write-Warning -Message "No value specified for variable $($variable)"
+                $errors+="[No value specified for variable $($variable)] "
             } else {
                 if ($variables.$($variable).secure -eq $true) {
                     $s+="@secure()`r`n"
@@ -112,9 +113,13 @@ function Get-dplVariableDefinition() {
             variables=$variables
             variableString=$s
         }
-        $r=New-Result -success $true -message "Successfully loaded variable definition ($($variableDefFile))" -value $obj -logLevel Information
+        if ($errors.length -eq 0) {
+            $r=New-Result -success $true -message "Successfully loaded variable definition ($($variableDefFile))" -value $obj -logLevel Information
+        } else {
+            $r=New-Result -success $false -message "Errors loading variable definition: $($errors)"
+        }
     } catch {
-        $r=New-Result -success $false -message "Error loading variable definition ($($variableDefFile))" -exception $_.Exception -logLevel Error
+        $r=New-Result -success $false -message "Unexpected error loading variable definition ($($variableDefFile))" -exception $_.Exception -logLevel Error
     }
     $r
 }
