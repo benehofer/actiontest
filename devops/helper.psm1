@@ -205,3 +205,25 @@ function Set-dplDirectoryPS() {
     $r
     #az functionapp deployment source config-zip -g $rgname -n $funcname --src $zipPath
 }
+function Get-dplHttpAuthHeader() {
+    param(
+        $resourceURI,
+        $additionalHeaderAttributes = @{}
+    )
+    try {
+        $accessToken=(az account get-access-token --resource $resourceURI | ConvertFrom-Json | select -ExpandProperty accessToken)
+        $header=@{
+            'Content-Type'='application/json'
+            'Authorization'='Bearer ' + $accessToken
+        }
+        $additionalHeaderAttributes.GetEnumerator() |%{
+            if ($header.ContainsKey($_.name)) {$header.Item($_.name)=$_.value}
+            else {$header.Add($_.name,$_.value)}
+
+        }
+        $r=New-Result -success $true -message "Successfully retrieved http auth header for $resourceURI" -value $header
+    } catch {
+        $r=New-Result -success $false -message "Error retreiving http auth header for $resourceURI" -exception $_.Exception
+    }
+    $r
+}
