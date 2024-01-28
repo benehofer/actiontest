@@ -175,10 +175,11 @@ function Set-dplDirectoryPS() {
         $solutionBasePath="ps\Azure Functions"
         $rgName=$variableDefinition.variables.resource_group_name.value
         $funcName=$variableDefinition.variables.function_app_name.value
+        $vaultName=$variableDefinition.variables.keyvault_name.value
         $zipPath="$($deploymentDirectory)\$($funcName).zip"
         Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
 
-        $functionNames=gci -path $solutionBasePath -Directory | select name,@{name="isfunctiondir";expression={Test-Path "$($_.fullname)\function.json"}} | ? {$_.isfunctionDir -eq $true} | select -ExpandProperty name
+        $functionNames=gci -path $solutionBasePath -Directory | select name,@{name="isfunctiondir";expression={Test-Path "$($_.fullname)\function.json"}} | ? {$_.isfunctionDir -eq $true} | select -ExpandProperty name      
 
         Get-Item -Path "$solutionBasePath\requirements.psd1" | Compress-Archive -DestinationPath $zipPath
         Get-Item -Path "$solutionBasePath\profile.ps1" | Compress-Archive -DestinationPath $zipPath -Update
@@ -192,11 +193,30 @@ function Set-dplDirectoryPS() {
         $s='Write-Host -message "No plan mode for az functionapp deployment"'
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
-        $s=""
+        $s="Write-Host 'Deploying function app code'" + "`r`n"
         $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip")' + "`r`n"
         $s+='@(0..$($output.length-1)) | %{' + "`r`n"
         $s+='    Write-Host $output[$_]' + "`r`n"
         $s+='}' + "`r`n"
+        $s+="Write-Host 'Deploying function app keys'" + "`r`n"
+        $keys=gci -path $solutionBasePath -Directory | ? {$_.name -like "*_*"} | select @{name="prefix";expression={"$($_.Name.Split('_')[0])"}},@{name="keyName";expression={"functionkey$($_.Name.Split('_')[0])"}} | select -Unique prefix,keyname
+        $keys | %{
+            $key=$_
+            $s+='$' + $($key.keyname) + '=$(az keyvault secret show --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" 2>$null) | convertfrom-json | select -ExpandProperty value' + "`r`n"
+            $s+='if ($null -eq $' + $($key.keyname) + ') {' + "`r`n"
+            $s+='    $' + $($key.keyname) + '=$(az keyvault secret set --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" --value "$(-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | %{[char]$_}))" 2>$null) | convertfrom-json | select -ExpandProperty value' + "`r`n"
+            $s+='}' + "`r`n"
+        }
+        $keys | %{
+            $key=$_
+            $functionNames | ? {$_ -like "$($key.prefix)_*"} | %{
+                $functionName=$_
+                $s+='$output=$(az functionapp function keys set --name "'+$funcName+'" --resource-group "'+$rgName+'" --function-name "'+$($functionName)+'" --key-name "widup" --key-value "$functionkey'+$($key.prefix)+'")' + "`r`n"
+                $s+='@(0..$($output.length-1)) | %{' + "`r`n"
+                $s+='    Write-Host $output[$_]' + "`r`n"
+                $s+='}' + "`r`n"                
+            }
+        }
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         $r=New-Result -success $true -message "Successfully created ps deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
