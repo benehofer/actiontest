@@ -37,19 +37,19 @@ function Write-dplResult() {
     PROCESS {
         switch ($result.LogLevel) {
             "Information" {
-                Write-Host -Message $result.message -ForegroundColor Green
+                Write-Host $result.message -ForegroundColor Green
                 break
             }
             "Warning" {  
-                Write-Host -Message $result.message -ForegroundColor DarkYellow
+                Write-Host $result.message -ForegroundColor DarkYellow
                 break
             }
             "Error" {
-                Write-Host -Message $result.message -ForegroundColor Red
+                Write-Host $result.message -ForegroundColor Red
                 break
             }
             Default {
-                Write-Host -Message $result.Message -ForegroundColor White
+                Write-Host $result.Message -ForegroundColor White
             }      
         }
         if (!$NoPassThru) {$result}
@@ -198,6 +198,7 @@ function Set-dplDirectoryPS() {
         $s+='    Write-Host $output[$_]' + "`r`n"
         $s+='}' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
+
         $r=New-Result -success $true -message "Successfully created ps deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error creating ps deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
@@ -226,4 +227,22 @@ function Get-dplHttpAuthHeader() {
         $r=New-Result -success $false -message "Error retreiving http auth header for $resourceURI" -exception $_.Exception
     }
     $r
+}
+function Get-dplFunctionAppSettings() {
+    param(
+        $variableDefinition,
+        $deploymentDirectory
+    )
+    try {
+
+    } catch {
+        $r=new
+    }
+    $r
+
+    $rgName=$variableDefinition.variables.resource_group_name.value
+    $funcName=$variableDefinition.variables.function_app_name.value
+    $(az functionapp config appsettings list --name $funcName --resource-group $rgname) | convertfrom-json | %{
+
+    }
 }
