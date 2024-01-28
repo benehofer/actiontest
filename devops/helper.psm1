@@ -194,10 +194,8 @@ function Set-dplDirectoryPS() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s="Write-Host 'Deploying function app code'" + "`r`n"
-        $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip")' + "`r`n"
-        $s+='@(0..$($output.length-1)) | %{' + "`r`n"
-        $s+='    Write-Host $output[$_]' + "`r`n"
-        $s+='}' + "`r`n"
+        $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip" --only-show-errors) | convertfrom-json' + "`r`n"
+        $s+='Write-Host "Result: $($output.provisioningState)"' + "`r`n"
         $s+="Write-Host 'Deploying function app keys'" + "`r`n"
         $keys=gci -path $solutionBasePath -Directory | ? {$_.name -like "*_*"} | select @{name="prefix";expression={"$($_.Name.Split('_')[0])"}},@{name="keyName";expression={"functionkey$($_.Name.Split('_')[0])"}} | select -Unique prefix,keyname
         $keys | %{
@@ -211,10 +209,8 @@ function Set-dplDirectoryPS() {
             $key=$_
             $functionNames | ? {$_ -like "$($key.prefix)_*"} | %{
                 $functionName=$_
-                $s+='$output=$(az functionapp function keys set --name "'+$funcName+'" --resource-group "'+$rgName+'" --function-name "'+$($functionName)+'" --key-name "widup" --key-value "$functionkey'+$($key.prefix)+'")' + "`r`n"
-                $s+='@(0..$($output.length-1)) | %{' + "`r`n"
-                $s+='    Write-Host $output[$_]' + "`r`n"
-                $s+='}' + "`r`n"                
+                $s+='$output=$(az functionapp function keys set --name "'+$funcName+'" --resource-group "'+$rgName+'" --function-name "'+$($functionName)+'" --key-name "widup" --key-value "$functionkey'+$($key.prefix)+'") | convertfrom-json' + "`r`n"
+                $s+='Write-Host "$($output.id)"' + "`r`n"
             }
         }
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
