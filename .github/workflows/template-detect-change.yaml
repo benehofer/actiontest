@@ -15,8 +15,8 @@ jobs:
       iac: ${{ steps.filter.outputs.iac }}
       ps: ${{ steps.filter.outputs.ps }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
       id: filter
       with:
         filters: |
