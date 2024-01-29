@@ -205,14 +205,12 @@ function Set-dplDirectoryPS() {
             $s+='    $' + $($key.keyname) + '=$(az keyvault secret set --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" --value "$(-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | %{[char]$_}))") | convertfrom-json | select -ExpandProperty value' + "`r`n"
             $s+='}' + "`r`n"
         }
-        $s+='Write-Host $functionkeysnow' + "`r`n"
-        $s+='Write-Host $functionkeysystem' + "`r`n"
         $keys | %{
             $key=$_
             $functionNames | ? {$_ -like "$($key.prefix)_*"} | %{
                 $functionName=$_
-                $s+='$output=$(az functionapp function keys set --name "'+$funcName+'" --resource-group "'+$rgName+'" --function-name "'+$($functionName)+'" --key-name "widup" --key-value $functionkey'+$($key.prefix)+') | convertfrom-json' + "`r`n"
-                $s+='Write-Host "$($output.id)"' + "`r`n"
+                $s+='$output=$(az functionapp function keys set --name "'+$funcName+'" --resource-group "'+$rgName+'" --function-name "'+$($functionName)+'" --key-name "widup" --key-value "$functionkey'+$($key.prefix)+'" --only-show-errors) | convertfrom-json' + "`r`n"
+                $s+='Write-Host "OK: $($output.id)"' + "`r`n"
             }
         }
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
