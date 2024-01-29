@@ -202,7 +202,7 @@ function Set-dplDirectoryPS() {
             $key=$_
             $s+='$' + $($key.keyname) + '=$(az keyvault secret show --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" 2>$null) | convertfrom-json | select -ExpandProperty value' + "`r`n"
             $s+='if ($null -eq $' + $($key.keyname) + ') {' + "`r`n"
-            $s+='    $' + $($key.keyname) + '=$(az keyvault secret set --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" --value "$(-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | %{[char]$_}))" 2>$null) | convertfrom-json | select -ExpandProperty value' + "`r`n"
+            $s+='    $' + $($key.keyname) + '=$(az keyvault secret set --vault-name "' + $vaultName + '" --name "' + $($key.keyname) + '" --value "$(-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | %{[char]$_}))") | convertfrom-json | select -ExpandProperty value' + "`r`n"
             $s+='}' + "`r`n"
         }
         $s+='Write-Host $functionkeysnow' + "`r`n"
