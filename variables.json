@@ -22,6 +22,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "rg-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "rg-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-rg-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rg-{projectshortname}-{instance}"
             }
@@ -31,6 +32,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "sa{ownershortname}{projectshortname}{stageshortname}{locationshortname}{instance}",
+                "WIDDEVPRD": "sa{ownershortname}{projectshortname}{stageshortname}{locationshortname}{instance}",
                 "WagnerTest": "widsa{projectshortname}{instance}",
                 "WagnerProd": "widst{projectshortname}{instance}"
             }
@@ -90,6 +92,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "id-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "id-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-id-{projectshortname}-{instance}",
                 "WagnerProd": "wid-id-{projectshortname}-{instance}"
             }
@@ -114,6 +117,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "https://{function_app_name}.azurewebsites.net/",
+                "WIDDEVPRD": "https://{function_app_name}.azurewebsites.net/",
                 "WagnerTest": "https://{function_app_name}.azurewebsites.net/",
                 "WagnerProd": "https://{function_app_name}.azurewebsites.net/"
             }
@@ -123,6 +127,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "log-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "log-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-log-{projectshortname}-{instance}",
                 "WagnerProd": "wid-law-{projectshortname}-{instance}"
             }
@@ -132,6 +137,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "appi-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "appi-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-appi-{projectshortname}-{instance}",
                 "WagnerProd": "wid-appi-{projectshortname}-{instance}"
             }
@@ -156,6 +162,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "func-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "func-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-func-{projectshortname}-{instance}",
                 "WagnerProd": "wid-func-{projectshortname}-{instance}"
             }
@@ -165,6 +172,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "plan-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "plan-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-plan-{projectshortname}-{instance}",
                 "WagnerProd": "wid-plan-{projectshortname}-{instance}"
             }
@@ -178,6 +186,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "rns-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "rns-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-rns-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rln-{projectshortname}-{instance}"
             }
@@ -187,6 +196,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "hycon-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "hycon-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-hycon-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rlhc-{projectshortname}-{instance}"
             }
@@ -237,6 +247,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "vault-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "vault-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-vault-{projectshortname}-{instance}",
                 "WagnerProd": "wid-kv-{projectshortname}-{instance}"
             }        
