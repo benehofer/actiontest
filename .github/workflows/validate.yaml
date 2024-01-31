@@ -1,0 +1,43 @@
+name: 'Production validation'
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'iac/**'
+      - 'ps/**'      
+
+jobs:
+  detect-change:
+    uses: ./.github/workflows/template-detect-change.yaml
+
+  build-iac:
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.iac == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'production-plan'
+      artifacttype: 'iac'
+    secrets: inherit
+
+  build-ps:
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.ps == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'production-plan'
+      artifacttype: 'ps'
+    secrets: inherit      
+
+  plan-integration-iac:
+    needs: build-iac
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'production-plan'
+      workflowtype: iac
+      mode: plan
+    secrets: inherit

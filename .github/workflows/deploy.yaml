@@ -1,0 +1,124 @@
+name: 'deploy'
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'feature/**'
+    paths:
+      - 'iac/**'
+      - 'ps/**'
+
+jobs:
+  detect-change:
+    uses: ./.github/workflows/template-detect-change.yaml
+
+  build-integration-iac:
+    needs: detect-change
+    if: ${{  contains(github.ref,'refs/heads/feature') && needs.detect-change.outputs.iac == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'integration-plan'
+      artifacttype: 'iac'
+    secrets: inherit
+
+  build-integration-ps:
+    needs: detect-change
+    if: ${{  contains(github.ref,'refs/heads/feature') && needs.detect-change.outputs.ps == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'integration-plan'
+      artifacttype: 'ps'
+    secrets: inherit      
+
+  plan-integration-iac:
+    needs: build-integration-iac
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'integration-plan'
+      workflowtype: iac
+      mode: plan
+    secrets: inherit      
+
+  apply-integration-iac:
+    needs: [build-integration-iac,plan-integration-iac]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'integration'
+      workflowtype: iac
+      mode: apply
+    secrets: inherit      
+  
+  apply-integration-ps:
+    needs: [build-integration-ps, plan-integration-iac, apply-integration-iac]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-integration-ps.result,'success')  }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'Integration'
+      workflowtype: ps
+      mode: apply
+    secrets: inherit      
+
+  build-production-iac:
+    needs: detect-change
+    if: ${{  contains(github.ref,'refs/heads/main') && needs.detect-change.outputs.iac == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'production-plan'
+      artifacttype: 'iac'
+    secrets: inherit
+
+  build-production-ps:
+    needs: detect-change
+    if: ${{  contains(github.ref,'refs/heads/main') && needs.detect-change.outputs.ps == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'production-plan'
+      artifacttype: 'ps'
+    secrets: inherit
+
+  plan-production-iac:
+    needs: build-production-iac
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'production-plan'
+      workflowtype: iac
+      mode: plan
+    secrets: inherit      
+
+  apply-production-iac:
+    needs: [build-production-iac,plan-production-iac]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'Production'
+      workflowtype: iac
+      mode: apply
+    secrets: inherit      
+  
+  apply-production-ps:
+    needs: [build-production-ps, plan-production-iac, apply-production-iac]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-production-ps.result,'success')  }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'Production'
+      workflowtype: ps
+      mode: apply
+    secrets: inherit      

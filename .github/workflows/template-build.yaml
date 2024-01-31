@@ -1,0 +1,31 @@
+name: Build code artifacts
+
+on:
+  workflow_call:
+    inputs:
+      doenv:
+        required: true
+        type: string
+      artifacttype:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build ${{ inputs.artifacttype }} artifact
+    runs-on: windows-latest
+    environment: ${{  inputs.doenv  }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ inputs.artifacttype }}
+        shell: pwsh
+        run: .\devops\${{  inputs.artifacttype  }}\build.ps1
+        env:
+          appEnv: ${{  vars.APP_ENVIRONMENT  }}
+          doEnv: ${{  vars.DEVOPS_ENVIRONMENT  }}
+          dpDir: deployment\${{ inputs.artifacttype }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{  inputs.artifacttype }}-build
+          path: deployment\${{ inputs.artifacttype }}\**
+          retention-days: 5
