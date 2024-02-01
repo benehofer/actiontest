@@ -30,7 +30,7 @@ jobs:
       artifacttype: 'ps'
     secrets: inherit      
 
-  plan-integration-iac:
+  plan-production-iac:
     needs: build-iac
     permissions:
       contents: 'read'
