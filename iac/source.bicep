@@ -1,4 +1,5 @@
 
+
 //Storage Account
 resource sa 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storage_account_name
