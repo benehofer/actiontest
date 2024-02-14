@@ -75,6 +75,11 @@
             "type": "string",
             "value": "department"
         },
+        "storage_account_location_table_name" :{
+            "description": "The name of the location table",
+            "type": "string",
+            "value": "location"
+        },        
         "storage_account_cache_container_name" :{
             "description": "The name of the cache blob container",
             "type": "string",
@@ -298,10 +303,22 @@
             "description": "The bc api url for the jobledger entity",
             "type": "string"
         },
+        "bc_url_employeedimensions": {
+            "description": "The bc api url for the employeedimensions entity",
+            "type": "string"
+        },
+        "bc_url_departments": {
+            "description": "The bc api url for the departments entity",
+            "type": "string"
+        },
+        "bc_url_departmentsupervisors": {
+            "description": "The bc api url for the departmentsupervisors entity",
+            "type": "string"
+        },
         "bc_queuebatchsize": {
             "description": "The max number of bc records processed in one batch",
-            "type": "int",
-            "value": 300
+            "type": "string",
+            "value": "300"
         },
         "crm_environment_url" :{
             "description": "The url of the CRM environment",
@@ -417,6 +434,36 @@
             "description": "The dv api url for the statisticrun entity (the environment url will pe prefixed to this)",
             "type": "string",
             "value": "/api/data/v9.2/widup_statisticruns"
+        },
+        "dv_url_recorddiff": {
+            "description": "The dv api url for the recorddiff entity (the environment url will pe prefixed to this)",
+            "type": "string",
+            "value": "/api/data/v9.2/widup_recorddiff"
+        },
+        "mth_max_minutes_item_in_queue": {
+            "description": "The maximum number of minutes an item is allowed to stay in a non-poison queue",
+            "type": "int",
+            "value": 30
+        },
+        "mth_max_minutes_syncjob_delay": {
+            "description": "The maximum number of minutes a syncjob is allowed to be behind its schedule",
+            "type": "int",
+            "value": 15
+        },
+        "mth_max_minutes_recorddiff_age": {
+            "description": "The maximum age of a diff record in the recorddiff dataverse table",
+            "type": "int",
+            "value": 60
+        },
+        "mth_max_minutes_statisticrun_age": {
+            "description": "The maximum age of a statisticrun records in the statisticrun dataverse table",
+            "type": "int",
+            "value": 45
+        },
+        "mth_max_minutes_statisticrun_tcerrors_age": {
+            "description": "The maximum age of the statisticrun record for timecard errors in the statisticrun dataverse table",
+            "type": "int",
+            "value": 30
         }
     },
     "WIDDEV": {
@@ -448,6 +495,9 @@
         "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
         "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
         "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "bc_url_employeedimensions": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsEmployeeDimensions"},
+        "bc_url_departmentsupervisors": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartmentSupervisors"},
+        "bc_url_departments": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartments"},
         "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
         "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
         "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
@@ -471,7 +521,7 @@
         "function_app_vnet_integration_subnet_id":{"value": ""},
         "hycon_adserver_name": {"value": "scwidmgt99"},
         "ad_username": {"value": "CHWID\\\\widup"},
-        "ad_userpassword": {"value": "dummy"},
+        "ad_userpassword": {"value": "kHGU65H3@#%gTHHJGGH"},
         "ad_useroupath": {"value": "ou=snowusers,ou=onprem,ou=chwid,dc=chwid,dc=local"},
         "ad_groupoupath": {"value": "ou=Snowgroups,ou=groups,ou=datacenter,ou=chwid,dc=chwid,dc=local"},
         "ad_assignmentgroup_prefix": {"value": "GG_"},
@@ -488,6 +538,9 @@
         "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
         "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
         "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "bc_url_employeedimensions": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsEmployeeDimensions"},
+        "bc_url_departmentsupervisors": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartmentSupervisors"},
+        "bc_url_departments": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartments"},
         "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
         "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
         "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
@@ -511,7 +564,7 @@
         "function_app_vnet_integration_subnet_id":{"value": ""},
         "hycon_adserver_name": {"value": "scwidapp11"},
         "ad_username": {"value": "CHWID\\\\sa-widup"},
-        "ad_userpassword": {"value": "dummy"},
+        "ad_userpassword": {"value": "sdge48%bxV5$^C"},
         "ad_useroupath": {"value": "ou=users,ou=onprem,ou=chwid,dc=chwid,dc=local"},
         "ad_groupoupath": {"value": "ou=ServiceNow,ou=organisationgroups,ou=groups,ou=datacenter,ou=chwid,dc=chwid,dc=local"},
         "ad_assignmentgroup_prefix": {"value": "GG_"},
@@ -528,6 +581,9 @@
         "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
         "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
         "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
+        "bc_url_employeedimensions": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsEmployeeDimensions"},
+        "bc_url_departmentsupervisors": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartmentSupervisors"},
+        "bc_url_departments": {"value": "https://api.businesscentral.dynamics.com/v2.0/PROD/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartments"},
         "snow_url_jobhead": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektkopf"},
         "snow_url_jobtask": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
         "snow_url_jobplanningline": {"value": "https://wagner.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},

@@ -47,6 +47,13 @@ function Initialize-WIDUp() {
     } else {
         $global:departmenttablename=''
     }
+
+    if ($null -ne $env:location_table_name) {
+        $global:locationtablename=$env:location_table_name
+    } else {
+        $global:locationtablename=''
+    }
+
     if ($null -ne $env:TABLE_STORAGE_URI) {
         $global:tableStorageUri=$env:TABLE_STORAGE_URI
     } else {
@@ -169,6 +176,24 @@ function Initialize-WIDUp() {
         $global:bcurljobledger=''
     }
 
+    if ($null -ne $env:bc_url_employeedimensions) {
+        $global:bcurlemployeedimensions=$env:bc_url_employeedimensions
+    } else {
+        $global:bcurlemployeedimensions=''
+    }
+
+    if ($null -ne $env:bc_url_departmentsupervisors) {
+        $global:bcurldepartmentsupervisors=$env:bc_url_departmentsupervisors
+    } else {
+        $global:bcurldepartmentsupervisors=''
+    }
+
+    if ($null -ne $env:bc_url_departments) {
+        $global:bcurldepartments=$env:bc_url_departments
+    } else {
+        $global:bcurldepartments=''
+    }
+
     if ($null -ne $env:snow_token_kvsecretname) {
         $global:snowtokenkvsecretname=$env:snow_token_kvsecretname
     } else {
@@ -289,6 +314,12 @@ function Initialize-WIDUp() {
         $global:dvurlstatisticrun=''
     }
 
+    if ($null -ne $env:DV_URL_RECORDDIFF) {
+        $global:dvurlrecorddiff=$env:DV_URL_RECORDDIFF
+    } else {
+        $global:dvurlrecorddiff=''
+    }
+
     if ($null -ne $env:BLOB_STORAGE_URI) {
         $global:blobstorageuri=$env:BLOB_STORAGE_URI
     } else {
@@ -343,10 +374,35 @@ function Initialize-WIDUp() {
         $global:adassignmentgroupprefix=''
     }
 
+    if ($null -ne $env:MTH_MAX_MINUTES_ITEM_IN_QUEUE) {
+        $global:mthmaxminutesiteminqueue=$env:MTH_MAX_MINUTES_ITEM_IN_QUEUE
+    } else {
+        $global:mthmaxminutesiteminqueue=30
+    }
 
+    if ($null -ne $env:MTH_MAX_MINUTES_SYNCJOB_DELAY) {
+        $global:mthmaxminutessyncjobdelay=$env:MTH_MAX_MINUTES_SYNCJOB_DELAY
+    } else {
+        $global:mthmaxminutessyncjobdelay=15
+    }
 
+    if ($null -ne $env:MTH_MAX_MINUTES_RECORDDIFF_AGE) {
+        $global:mthmaxminutesrecorddiffage=$env:MTH_MAX_MINUTES_RECORDDIFF_AGE
+    } else {
+        $global:mthmaxminutesrecorddiffage=60
+    }
 
-    
+    if ($null -ne $env:MTH_MAX_MINUTES_STATISTICRUN_AGE) {
+        $global:mthmaxminutesstatisticrunage=$env:MTH_MAX_MINUTES_STATISTICRUN_AGE
+    } else {
+        $global:mthmaxminutesstatisticrunage=30
+    }
+
+    if ($null -ne $env:MTH_MAX_MINUTES_STATISTICRUN_TCERRORS_AGE) {
+        $global:mthmaxminutesstatisticruntcerrorsage=$env:MTH_MAX_MINUTES_STATISTICRUN_TCERRORS_AGE
+    } else {
+        $global:mthmaxminutesstatisticruntcerrorsage=15
+    }  
 }
 function Get-wupBCAuthHeader() {
     param()
@@ -796,7 +852,7 @@ function Get-wupEmployeeDepartmentData() {
             $response=Invoke-RestMethod -Uri $uri -Headers $authHeader -Method Get
             #$response=invoke-widRestMethod -Uri $uri -Headers $authHeader -Method Get
             $departmentData=$response.value
-            if (!($doNotSetGlobalVariable)) {$global:departmentData=$departmentData}
+            if (!($doNotSetGlobalVariable)) {$global:employeeDepartmentData=$departmentData}
             $r=New-Result -success $true -message "Successfully loaded employee department data" -value $departmentData -logLevel Information    
         }
     } catch {
@@ -805,6 +861,167 @@ function Get-wupEmployeeDepartmentData() {
         } else {
             $r=New-Result -success $false -message "Error retrieving employee department data" -exception $_.Exception -logLevel Error -value $(New-httpResponse -statusCode InternalServerError -body "Error loading employee department data")
         }
+    }
+    $r
+}
+function Get-wupEmployeeLocationData() {
+    param(
+        [switch]$doNotSetGlobalVariable
+    )
+    try {
+        $r=Get-AuthHeader -resourceURI $global:tablestorageuri -additionalHeaderAttributes @{'Accept' = 'application/json;odata=nometadata';'x-ms-version'='2017-11-09'}
+        if ($r.Success) {
+            $authHeader=$r.Value
+            $uri="$($global:tablestorageuri)$($global:locationtablename)()"
+            $response=Invoke-RestMethod -Uri $uri -Headers $authHeader -Method Get
+            #$response=invoke-widRestMethod -Uri $uri -Headers $authHeader -Method Get
+            $locationData=$response.value
+            if (!($doNotSetGlobalVariable)) {$global:employeeLocationData=$locationData}
+            $r=New-Result -success $true -message "Successfully loaded employee department data" -value $locationData -logLevel Information    
+        }
+    } catch {
+        if ($_.Exception.response.statuscode -eq "NotFound") {
+            $r=New-Result -success $false -message "No employee location data found" -exception $_.Exception -logLevel Warning -value $(New-httpResponse -statusCode InternalServerError -body "Error loading employee department data")
+        } else {
+            $r=New-Result -success $false -message "Error retrieving employee location data" -exception $_.Exception -logLevel Error -value $(New-httpResponse -statusCode InternalServerError -body "Error loading employee department data")
+        }
+    }
+    $r
+}
+function _Set-wupEmployeeeData() {
+    param(
+        $sourceData
+    )
+    try {
+        $r=Get-wupBCAuthHeader
+        if ($r.Success) {
+            $bcHeader=$r.Value
+            $filter=""
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurlemployee -filter $filter | Write-Result
+        }
+        if ($r.Success) {
+            $allEmployees=$r.value
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurldepartmentsupervisors -filter $filter
+        }
+        if ($r.Success) {
+            $departmentsupervisors=$r.Value
+            $departmentsupervisors | ? {$null -ne $_} | %{
+                $dsv=$_
+                $id=$($allEmployees | ? {$_.employeeNo -eq $dsv.employeeNo} | select -ExpandProperty id) 
+                $dsv | Add-Member -MemberType NoteProperty -Name "supervisorid" -Value $id
+            }
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurlemployeedimensions -filter $filter
+        }
+        if ($r.success) {
+            $employeeDimensions=$r.value
+            $employeeDimensions=$employeeDimensions | select -Unique dimensionValue,dimensionValueName
+            $r=Get-wupEmployeeDepartmentData
+        }
+        if ($r.success) {
+            $r=Get-wupEmployeeLocationData
+        }
+        if ($r.Success) {
+            $allSnowGroups=$($($global:employeeDepartmentData | select -ExpandProperty adds_assignment_groups) -join ",").split(",") | select -Unique
+            $sourceData | ? {$null -ne $_} | % {
+                $employee=$_
+                $departmentName=$($employeeDimensions | ? {$_.dimensionValue -eq $employee.department} | select -ExpandProperty dimensionValueName)
+                $employee | Add-Member -MemberType NoteProperty -Name "departmentName" -Value $departmentName
+                $manager=$($departmentsupervisors | ? {$_.departmentCode -eq $employee.department} | select -ExpandProperty supervisorid)
+                $employee | Add-Member -MemberType NoteProperty -Name "manager" -Value $manager
+                $location=$($global:employeeLocationData | ? {$_.locationno -eq $employee.placeOfWork})
+                if ($null -ne $location) {
+                    $employee | Add-Member -MemberType NoteProperty -Name "streetaddress" -Value $location.streetaddress
+                    $employee | Add-Member -MemberType NoteProperty -Name "physicaldeliveryofficename" -Value $location.physicaldeliveryofficename
+                    $employee | Add-Member -MemberType NoteProperty -Name "co" -Value $location.co
+                    $employee | Add-Member -MemberType NoteProperty -Name "postalcode" -Value $location.postalcode
+                }
+                $snowGroups=$($($global:employeeDepartmentData | ? {$_.departmentno -eq $employee.department} | select -ExpandProperty adds_assignment_groups).split(","))
+                $notSnowGroups=$allSnowGroups | ? {$_ -notin $snowGroups}
+                $employee | Add-Member -MemberType NoteProperty -Name "snowGroups" -Value $($snowGroups -join ",")
+                $employee | Add-Member -MemberType NoteProperty -Name "notSnowGroups" -Value $($notSnowGroups -join ",")
+            }
+        }
+        if ($r.Success) {
+            $r=New-Result -success $true -message "Successfully set employee data" -value $sourceData -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error setting employee data: $($_.exception.message)" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Set-wupEmployeeData() {
+    param(
+        $sourceData
+    )
+    try {
+        $r=Get-wupBCAuthHeader
+        if ($r.Success) {
+            $bcHeader=$r.Value
+            $filter=""
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurlemployee -filter $filter | Write-Result
+        }
+        if ($r.Success) {
+            $allEmployees=$r.value
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurldepartmentsupervisors -filter $filter
+        }
+        if ($r.Success) {
+            $departmentsupervisors=$r.Value
+            $departmentsupervisors | ? {$null -ne $_} | %{
+                $dsv=$_
+                $id=$($allEmployees | ? {$_.employeeNo -eq $dsv.employeeNo} | select -ExpandProperty id) 
+                $dsv | Add-Member -MemberType NoteProperty -Name "supervisorid" -Value $id
+            }
+            $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurldepartments -filter $filter
+        }
+        if ($r.success) {
+            $departments=$r.value
+            $r=Get-wupEmployeeDepartmentData
+        }
+        if ($r.success) {
+            $r=Get-wupEmployeeLocationData
+        }
+        if ($r.Success) {
+            $allSnowGroups=$($($global:employeeDepartmentData | select -ExpandProperty adds_assignment_groups) -join ",").split(",") | select -Unique
+            $sourceData | ? {$null -ne $_} | % {
+                $employee=$_
+                #$departmentname=$($departments | ? {$_.code -eq $($employee.department).split(".")[0]} | select -ExpandProperty description)
+                $departmentname=$($departments | ? {$_.code -eq $($employee.department)} | select -ExpandProperty description)
+                $parentDepartmentCode=$($departments | ? {$_.code -eq $($employee.department)} | select -ExpandProperty parentDepartmentCode)
+                $employee | Add-Member -MemberType NoteProperty -Name "departmentName" -Value $departmentname
+                $employee | Add-Member -MemberType NoteProperty -Name "parentDepartmentCode" -Value $parentDepartmentCode
+
+                $manager=$($departmentsupervisors | ? {$_.departmentCode -eq $employee.department})
+                if ($manager.supervisorid -eq $employee.id) {
+                    if ($null -ne $employee.parentDepartmentCode) {
+                        $manager=$($departmentsupervisors | ? {$_.departmentCode -eq $employee.parentDepartmentCode})
+                    } else {
+                        $manager=$null
+                    }
+                }
+                $employee | Add-Member -MemberType NoteProperty -Name "manager" -Value $manager.supervisorid
+                $location=$($global:employeeLocationData | ? {$_.locationno -eq $employee.placeOfWork})
+                if ($null -ne $location) {
+                    $employee | Add-Member -MemberType NoteProperty -Name "streetaddress" -Value $location.streetaddress
+                    $employee | Add-Member -MemberType NoteProperty -Name "physicaldeliveryofficename" -Value $location.physicaldeliveryofficename
+                    $employee | Add-Member -MemberType NoteProperty -Name "co" -Value $location.co
+                    $employee | Add-Member -MemberType NoteProperty -Name "postalcode" -Value $location.postalcode
+                }
+                if ($employee.transferToNOW -eq $true) {
+                    $snowGroups=$($($global:employeeDepartmentData | ? {$_.departmentno -eq $($employee.department).split(".")[0]} | select -ExpandProperty adds_assignment_groups).split(","))
+                } else {
+                    $snowGroups=@()
+                }
+                $notSnowGroups=$allSnowGroups | ? {$_ -notin $snowGroups}
+                $employee | Add-Member -MemberType NoteProperty -Name "snowGroups" -Value $($snowGroups -join ",")
+                $employee | Add-Member -MemberType NoteProperty -Name "notSnowGroups" -Value $($notSnowGroups -join ",")
+            }
+        }
+        if ($r.Success) {
+            #$sourceData | select employeeno,name,firstname,businessemail,id,department,departmentname,manager,parentDepartmentCode,transfertonow,placeofwork,streetaddress,physicaldeliveryofficename,co,postalcode,snowGroups,notSnowGroups | Export-Csv -Path "$($env:Temp)\employee.csv" -Delimiter "," -NoTypeInformation -Encoding UTF8
+            $r=New-Result -success $true -message "Successfully set employee data" -value $sourceData -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error setting employee data: $($_.exception.message)" -exception $_.exception -logLevel Error
     }
     $r
 }
@@ -1278,7 +1495,10 @@ function Invoke-wupADServerCommandEmployee() {
                     } else {
                         Set-ADUser -Identity $adUser -Givenname $firstName -Surname $name -displayName $displayName -EmailAddress $businessEMail -Credential $credential | Out-Null
                     }
-                    Set-ADuser -Identity $adUser -EmployeeNumber $employeeNo -Department $departmentname -Credential $credential | Out-Null
+                    Set-ADuser -Identity $adUser -EmployeeNumber $employeeNo -Department $departmentname -StreetAddress $streetaddress -City $physicaldeliveryofficename -postalcode $postalcode -country $co -Credential $credential | Out-Null
+                    if ($null -ne $manager) {
+                        Set-ADuser -Identity $adUser -manager $manager
+                    }
                     $adUser | Add-Member -MemberType NoteProperty -Name "changeMode" -Value $mode -Force
                     $r=New-Result -success $true -message "Successfully $(if ($mode -eq 0) {'modified'} else {'created'}) ADDS user [$($id)]" -value $adUser -logLevel Information
                 } catch {
@@ -1308,11 +1528,20 @@ function Invoke-wupADServerCommandEmployee() {
                 $r
             }
             function Set-wupADUserMemberships() {
+                param(
+                    [bool]$add
+                )
                 try {
-                    Add-ADGroupMember -Identity $adGroup -Members $adUser.distinguishedName | out-null
-                    $r=New-Result -success $true -message "Successfully set group memberships of ADDS user [$($id)] in ADDS group [$($adgroup.description)]" -value $adUser -logLevel Information
+                    if ($add) {
+                        Add-ADGroupMember -Identity $adGroup -Members $adUser.distinguishedName  -Credential $credential | out-null                        
+                        $action="add"
+                    } else {
+                        Remove-ADGroupMember -Identity $adGroup -Members $adUser.distinguishedName -Confirm:$false -Credential $credential | out-null
+                        $action="remove"
+                    }
+                    $r=New-Result -success $true -message "Successfully set group memberships of ADDS user [user: $($id), group: $($adgroup.description), action: $($action)]" -value $adUser -logLevel Information
                 } catch {
-                    $r=New-Result -success $false -message "Error setting group memberships of ADDS user [$($id)]" -exception $_.exception -logLevel Error
+                    $r=New-Result -success $false -message "Error setting group memberships of ADDS user [user: $($id), group: $($adgroup.description), action: $($action)]" -exception $_.exception -logLevel Error
                 }
                 $r    
             }
@@ -1321,21 +1550,39 @@ function Invoke-wupADServerCommandEmployee() {
             $employeeNo=$userrecord.employeeNo            # 468
             $name=$userrecord.name                        # Candan-Ince
             $firstName=$userrecord.firstName              # Sevinç
+            $displayName="$($name) $($firstName)"
             $businessEMail=$userrecord.businessEMail      # sevinc.candan@wagner.ch
             $id=$userrecord.id                            # CANS
-            $department=$userrecord.department            # 4150
+            $department=$userrecord.department            # 4150            
+            $departmentName=$userrecord.departmentName
             $transfertonow=$userrecord.transfertonow      # true
-            $departmentName=$(if ($null -eq $userrecord.departmentname) {$userrecord.department} else {$userrecord.departmentname})
+            $manager=$userrecord.manager
+            $streetaddress=$userrecord.streetaddress
+            $physicaldeliveryofficename=$userrecord.physicaldeliveryofficename
+            $co=$userrecord.co
+            $postalcode=$userrecord.postalcode
+            $snowGroups=$userrecord.snowGroups
+            $notSnowGroups=$userrecord.notSnowGroups
             $useroupath=$adsettings.userOuPath
             $groupoupath=$adsettings.groupOuPath
             $assignmentGroupPrefix=$adsettings.assignmentGroupPrefix
-            $displayName="$($name) $($firstName)"
-            
             $adGroupDefs=@()
-            $userrecord.adds_assignment_groups.split(",") | %{
-                $adGroupDefs+=[PSCustomObject]@{
-                    groupName = "$($assignmentGroupPrefix)$($_)"
-                    description=$_
+            if ($userrecord.snowGroups.length -gt 0) {
+                $userrecord.snowGroups.Split(",") | %{
+                    $adGroupDefs+=[PSCustomObject]@{
+                        groupName = "$($assignmentGroupPrefix)$($_)"
+                        description=$_
+                        add=$true
+                    }
+                }
+            }
+            if ($userrecord.notSnowGroups.length -gt 0) {
+                $userrecord.notSnowGroups.Split(",") | %{
+                    $adGroupDefs+=[PSCustomObject]@{
+                        groupName = "$($assignmentGroupPrefix)$($_)"
+                        description=$_
+                        add=$false
+                    }
                 }
             }
 
@@ -1344,16 +1591,15 @@ function Invoke-wupADServerCommandEmployee() {
                 $adUser=$r.Value
             }
             if ($r.Success) {
-                if ($transfertonow -eq $true) {
-                    $adGroupDefs | % {
-                        if ($r.Success) {
-                            $r=Get-wupADGroup -groupDef $_
-                        }
-                        if ($r.Success) {
-                            $adGroup=$r.Value
-                            $r=Set-wupADUserMemberships
-                        }
+                $adGroupDefs | % {
+                    $groupdef=$_
+                    if ($r.Success) {
+                        $r=Get-wupADGroup -groupDef $groupdef
                     }
+                    if ($r.Success) {
+                        $adGroup=$r.Value
+                        $r=Set-wupADUserMemberships -add $($groupdef.add)
+                    }                    
                 }
             }
             if ($r.Success) {
@@ -1416,6 +1662,372 @@ function Compare-wupDataDVSNOW() {
         }
     } catch {
         $r=new-result -success $false -message "Error comparing records from snow and dv" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Get-wupStatRun() {
+    param(
+        [ValidateSet(
+            "timeCardErrors",
+            "journal",
+            "debitor",
+            "jobHead",
+            "jobTask",
+            "jobPlanningLine"
+        )]$statisticsType
+    )
+    try {
+        switch ($statisticsType) {
+            "timeCardErrors" {$key="0ab0ea46-28b9-4f67-9aa8-438a982552e1";break}
+            "journal" {$key="57032dff-fbcf-4fe1-964a-049ede72b9a8";break}
+            "debitor" {$key="d9b3bbf9-83f7-44c4-9c65-d1cf318c91b7";break}
+            "jobHead" {$key="c76e4af9-ed92-46fd-9007-ac677574a676";break}
+            "jobTask" {$key="1400c5ba-10eb-469a-ba69-2b515fdc977a";break}
+            "jobPlanningLine" {$key="c5fd8c22-71c7-410b-9714-2690035aa005";break}
+        }
+        $statisticRun=[PSCustomObject]@{
+            key=$key
+            statisticsType=$statisticsType
+            to=$(Get-Date)
+        }
+        $r=Get-wupDVAuthHeader | Write-Result
+        if ($r.Success) {
+            $dvHeader=$r.Value
+            $uri="$($global:dvEnvironmentUrl)/api/data/v9.2/widup_statisticruns?`$filter=(widup_key eq '$key')"
+            $response=Invoke-RestMethod -Headers $dvHeader -Uri $uri -Method get -UseBasicParsing
+            $recs=$response.value
+            if ($recs.Length -eq 0) {
+                $statisticRun | Add-Member -MemberType NoteProperty -Name "from" -Value $($(get-date).AddMinutes(-60))
+                #$statisticRun | Add-Member -MemberType NoteProperty -Name "from" -Value $($(get-date).adddays(-30))
+            } else {
+                $statisticRun | Add-Member -MemberType NoteProperty -Name "from" -Value $(get-date $recs[0].widup_from)
+            }
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "from_date" -Value $("$('{0:d2}' -f $statisticRun.from.Year)-$('{0:d2}' -f $statisticRun.from.month)-$('{0:d2}' -f $statisticRun.from.day)")
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "from_time" -Value $("$('{0:d2}' -f $statisticRun.from.Hour):$('{0:d2}' -f $statisticRun.from.Minute):$('{0:d2}' -f $statisticRun.from.Second)")
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "to_date" -Value $("$('{0:d2}' -f $statisticRun.to.Year)-$('{0:d2}' -f $statisticRun.to.month)-$('{0:d2}' -f $statisticRun.to.day)")
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "to_time" -Value $("$('{0:d2}' -f $statisticRun.to.Hour):$('{0:d2}' -f $statisticRun.to.Minute):$('{0:d2}' -f $statisticRun.to.Second)")
+            
+            $snowFilter="sysparm_query=sys_updated_onBETWEENjavascript:gs.dateGenerate('$($statisticRun.from_date)','$($statisticRun.from_time)')@javascript:gs.dateGenerate('$($statisticRun.to_date)','$($statisticRun.to_time)')"            
+            $bcFilter="`$filter=(systemModifiedAt ge $($statisticRun.from.ToUniversalTime().tostring('s'))Z) and (systemModifiedAt le $($statisticRun.to.ToUniversalTime().tostring('s'))Z)"
+            $snowUrl=$(Invoke-Command([scriptblock]::Create("`$global:snowtableurl$($statisticsType)")))
+            $bcUrl=$(Invoke-Command([scriptblock]::Create("`$global:bcurl$($statisticsType)")))
+            $snowFilterSingle="u_bc_number=`$(`$sourceEntity.systemid)"
+            $bcFilterSingle="filter=(systemid eq `$(`$sourceEntity.u_bc_number))"
+            $snowPrimaryKey="u_bc_number"
+            $bcPrimaryKey="systemid"
+            $compares=@()
+            #exemptions
+            switch ($statisticsType) {
+                "timeCardErrors" {
+                    $snowUrl="$($global:snowtableurloutboundmessage)"
+                    break
+                }
+                "journal" {
+                    $snowFilter+="^u_active=true"
+                    $bcUrl="$($global:bcurljobworksheet)"
+                    $snowFilterSingle="sys_id=`$(`$sourceEntity.wagGUIDNOW)"
+                    $bcFilterSingle="filter=(wagGUIDNOW eq '`$(`$sourceEntity.sys_id)')"
+                    $snowPrimaryKey="sys_id"
+                    $bcPrimaryKey="wagGUIDNOW"        
+                    $compares+="(`$sourceEntity.u_billable_amount_h -eq `$destinationEntity.quantity)"
+                    $compares+="(`$sourceEntity.u_card_date -eq `$destinationEntity.postingdate)"
+                    break
+                }
+                "debitor" {
+                    $bcFilter="`$filter=(lastModifiedDateTime ge $($statisticRun.from.ToUniversalTime().tostring('s'))Z) and (lastModifiedDateTime le $($statisticRun.to.ToUniversalTime().tostring('s'))Z)"                    
+                    break
+                }
+                "jobHead" {
+                    $snowFilter+="^active=true"
+                    break
+                }
+                "jobTask" {
+                    $bcFilter+=" and (jobTaskType eq 'Posting')"
+                    #$snowFilter+="^u_active=true"
+                    $snowFilter+=""
+                    break
+                }
+                "jobPlanningLine" {
+                    $bcFilter+=" and (type eq 'Resource') and (lineType eq 'Budget')"
+                    #$snowFilter+="^u_active=true^assignment_groupISNOTEMPTY"
+                    $snowFilter+=""
+                    break
+                }
+            }
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "snowFilterModified" -Value $snowFilter
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "bcFilterModified" -Value $bcFilter
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "snowUrl" -Value $snowUrl
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "bcUrl" -Value $bcUrl
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "snowFilterSingle" -Value $snowFilterSingle
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "bcFilterSingle" -Value $bcFilterSingle
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "snowPrimaryKey" -Value $snowPrimaryKey
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "bcPrimaryKey" -Value $bcPrimaryKey
+            $statisticRun | Add-Member -MemberType NoteProperty -Name "compares" -Value $compares
+            $r=New-Result -success $true -message "Successfully retrieved last statistics run date" -value $statisticRun -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error retrieving last statistics run date" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Set-wupStatRun() {
+    param(
+        $statisticRun
+    )
+    try {
+        $r=Get-wupDVAuthHeader | Write-Result
+        if ($r.Success) {
+            $dvHeader=$r.Value
+            $uri="$($global:dvEnvironmentUrl)/api/data/v9.2/widup_statisticruns(widup_key='$($statisticRun.key)')"
+            $body=[PSCustomObject]@{
+                widup_key=$statisticRun.key
+                widup_run="Statistic run $($statisticRun.statisticsType): $(Get-Date $($statisticRun.to))"
+                widup_from=$(Get-Date $($($statisticRun.to))).AddSeconds(-10).ToUniversalTime().ToString("s")
+            } | convertto-json -Compress
+            $response=Invoke-WebRequest -Headers $dvHeader -Uri $uri -Body $body -Method Patch -UseBasicParsing -ContentType "application/json; charset=utf-8"
+            $r=New-Result -success $true -message "Successfully set last statistics run date" -value $statisticrun -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error setting last statistics run date" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Send-wupTimecard() {
+    param(
+        $snowOutboundMessage
+    )
+    try {
+        $wagGuidNow=$snowOutboundMessage.u_payload | ConvertFrom-Json | select -ExpandProperty wag_guid_now
+        $r=Get-wupVaultSecret -secretName "functionkeysnow" -vaultUrl $global:vaultUrl | Write-Result
+        if ($r.Success) {
+            $functionKey=$r.Value.value
+            $headers=@{
+                'Content-Type'='application/json'
+                'x-functions-key'=$functionKey
+            }
+            $url="$($global:apiBaseUrl)api/snow/Projekt_Erfassungsjournale"
+            $response=Invoke-WebRequest -Uri $url -Headers $headers -Method post -Body $($snowOutboundMessage.u_payload) -UseBasicParsing
+            $r=New-Result -success $true -message "Successfully re-sent timecard ($wagGuidNow)" -value $response -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error re-sending timecard ($wagGuidNow)" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Invoke-wupStatTimecardErrors() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$statisticRun
+    )
+    try {
+        $r=Get-wupSnowAuthHeader -adminToken
+        if ($r.Success) {
+            $snowAdminHeader=$r.Value
+            $url="$($global:snowtableurloutboundmessage)?$($statisticRun.snowFilterModified)"
+            $response=Invoke-WebRequest -Uri $url -Headers $snowAdminHeader -Method Get -UseBasicParsing
+            $snowmessagelog=@()
+            $snowmessagelog+=$response.Content | convertfrom-json | select -ExpandProperty result
+            $snowmessagelog=$snowmessagelog | ? {$_.u_table -eq 'time_card' -and $_.u_http_status -ne 200}
+            $rsub=New-Result -success $true -message "Found $($snowmessagelog.length) failed timecard requests since [$($statisticRun.from)]" | Write-Result
+            $snowmessagelog | ? {$null -ne $_} | %{
+                $snowMessageLogEntry=$_
+                if ($rsub) {
+                    $rsub=Send-wupTimecard -snowOutboundMessage $snowMessageLogEntry | Write-Result
+                    Start-Sleep -Seconds 5
+                }
+            }
+        }
+        if (!($rsub.Success)) {
+            $r=New-Result -success $false -message "Error processing time card errors; errors in child task: $($rsub.message)" -exception $rsub.exception -logLevel Error | Write-Result
+        }
+        if ($r.Success) {
+            $r=Set-wupStatRun -statisticRun $statisticRun | Write-Result
+        }
+        if ($r.Success) {
+            $r=New-Result -success $true -message "Successfully processed time card errors" -value $null -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error processing time card errors" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Set-wupStatDiff() {
+    param(
+        [Parameter(ParameterSetName='fromStat')]$sourceEntity,
+        [Parameter(ParameterSetName='fromStat')]$sourceType,
+        [Parameter(ParameterSetName='fromStat')]$statisticRun,
+        [Parameter(ParameterSetName='fromDV')]$dvBody,
+        $bcHeader,
+        $snowAdminHeader
+    )
+    try {
+        if ($PSCmdlet.ParameterSetName -eq 'fromDV') {
+            $sourceEntity=$dvBody."$($global:dvEnvironmentPublisherPrefix)_sourceEntity" | Convertfrom-json
+            $statisticRun=$dvBody."$($global:dvEnvironmentPublisherPrefix)_statisticRun" | Convertfrom-json
+            $sourceType=$dvBody."$($global:dvEnvironmentPublisherPrefix)_sourceType"
+            $entityType=$dvBody."$($global:dvEnvironmentPublisherPrefix)_entityType"
+            $dvPrimaryKeyValue=$dvBody."$($global:dvEnvironmentPublisherPrefix)_recorddiffid"
+            $dvBody=$dvbody | select "$($global:dvEnvironmentPublisherPrefix)_*"
+        } else {
+            $dvBody=[PSCustomObject]@{
+                "$($global:dvEnvironmentPublisherPrefix)_result" = 0
+                "$($global:dvEnvironmentPublisherPrefix)_message" = "Same"
+                "$($global:dvEnvironmentPublisherPrefix)_namekey" = "$([Guid]::NewGuid() | select -expandproperty guid)"
+                "$($global:dvEnvironmentPublisherPrefix)_sourcetype"=$sourceType
+                "$($global:dvEnvironmentPublisherPrefix)_entitytype"=$statisticRun | select -expandproperty statisticsType
+                #"$($global:dvEnvironmentPublisherPrefix)_entitytype"="Test"
+                "$($global:dvEnvironmentPublisherPrefix)_sourceid"=$sourceEntity | select -expandproperty $statisticRun."$($sourcetype)PrimaryKey"
+                "$($global:dvEnvironmentPublisherPrefix)_sourceentity"=$($sourceEntity | convertto-json -Depth 10 -Compress)
+                "$($global:dvEnvironmentPublisherPrefix)_statisticrun"=$($statisticRun | convertto-json -Depth 10 -Compress)
+            }
+            $dvPrimaryKeyValue=""
+        }
+        switch($sourceType) {
+            "snow" {
+                $bcurl="$($statisticRun.bcUrl)?`$$(Invoke-Command([scriptblock]::Create('"'+"$($statisticRun.bcFilterSingle)"+'"')))"
+                $response=invoke-webrequest -uri $bcurl -headers $bcHeader -method GET -UseBasicParsing
+                $destinationEntity=$response.Content | convertfrom-json | select -ExpandProperty value
+                $destinationType="BC"
+                break
+            }
+            "bc" {
+                $snowurl="$($statisticRun.snowUrl)?$(Invoke-Command([scriptblock]::Create('"'+"$($statisticRun.snowFilterSingle)"+'"')))"
+                $response=invoke-webrequest -uri $snowurl -headers $snowAdminHeader -method GET -UseBasicParsing
+                $destinationEntity=$response.Content | convertfrom-json | select -ExpandProperty result
+                $destinationType="SNOW"
+                break
+            }
+        }
+        if ($null -ne $destinationEntity) {
+            $valid=$true
+            $statisticRun.compares | %{
+                $valid=$valid -and $(Invoke-Command([scriptblock]::Create($_)))
+            }
+            if ($valid) {
+                if ($dvPrimaryKeyValue.length -gt 0) {
+                    $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl
+                    if ($r.Success) {
+                        $dvToken=$r.Value
+                        $r=Remove-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_recorddiffs" -primaryKey $dvPrimaryKeyValue | Write-Result
+                    }
+                } else {
+                    $r=new-result -success $true -message "bootstrap result"
+                }
+            } else {
+                $dvBody.$("$($global:dvEnvironmentPublisherPrefix)_result")=1
+                $dvBody.$("$($global:dvEnvironmentPublisherPrefix)_message")="$destinationType record not identical"
+                $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl
+                if ($r.Success) {
+                    $dvToken=$r.Value
+                    $r=Set-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_recorddiffs" -body $($dvBody | ConvertTo-Json -Compress) -primaryKey $dvPrimaryKeyValue | Write-Result
+                }
+            }
+        } else {
+            $dvBody.$("$($global:dvEnvironmentPublisherPrefix)_result")=2
+            $dvBody.$("$($global:dvEnvironmentPublisherPrefix)_message")="$destinationType record missing"
+            $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl
+            if ($r.Success) {
+                $dvToken=$r.Value
+                $r=Set-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_recorddiffs" -body $($dvBody | ConvertTo-Json -Compress) -primaryKey $dvPrimaryKeyValue | Write-Result
+            }       
+        }
+        if ($r.Success) {
+            $r=new-result -success $true -message "Successfully compared records [Result: $($dvBody.$("$($global:dvEnvironmentPublisherPrefix)_result")), Id: $($dvBody.$("$($global:dvEnvironmentPublisherPrefix)_sourceID"))]" -value $($dvBody.$("$($global:dvEnvironmentPublisherPrefix)_result")) -logLevel Information
+        }
+    } catch {
+        $r=new-result -success $false -message "Error comapring records" -exception $_.exception -logLevel error
+    }
+    $r
+}
+function Invoke-wupStatistic() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$statisticRun
+    )
+    try {
+        $r=Get-wupSnowAuthHeader -adminToken
+        if ($r.Success) {
+            $snowAdminHeader=$r.Value
+            $r=Get-wupBCAuthHeader
+        }
+        if ($r.Success) {
+            $bcHeader=$r.value
+            $r=Set-wupBCURLJobworksheet -bcHeader $bcHeader
+        }
+        if ($r.Success) {
+            #snow->bc
+            if ($statisticRun.snowFilterModified.length -gt 0) {
+                $url="$($statisticRun.snowUrl)?$($statisticRun.snowFilterModified)"
+                $response=Invoke-WebRequest -Uri $url -Headers $snowAdminHeader -Method Get -UseBasicParsing
+                $snowEntities=@()
+                $snowEntities+=$response.Content | convertfrom-json | select -ExpandProperty result
+                $(New-Result -success $true -message "SNOW->BC [$($statisticRun.statisticsType)] $($snowEntities.length) records") | Write-Result -NoPassThru
+                $snowEntities | ? {$null -ne $_} | %{
+                    $snowEntity=$_
+                    $r=Set-wupStatDiff -sourceEntity $snowEntity -sourceType "snow" -statisticRun $statisticRun -bcHeader $bcHeader -snowAdminHeader $snowAdminHeader | Write-Result
+                    #$r.value
+                }
+            }
+            #bc->snow
+            if ($statisticRun.bcFilterModified.length -gt 0) {
+                $url="$($statisticRun.bcUrl)?$($statisticRun.bcFilterModified)"
+                $response=Invoke-WebRequest -Uri $url -Headers $bcHeader -Method Get -UseBasicParsing
+                $bcEntities=@()
+                $bcEntities+=$response.Content | convertfrom-json | select -ExpandProperty value
+                $(New-Result -success $true -message "BC->SNOW [$($statisticRun.statisticsType)] $($bcEntities.length) records") | Write-Result -NoPassThru
+                $bcEntities | ? {$null -ne $_} | %{
+                    $bcEntity=$_
+                    $r=Set-wupStatDiff -sourceEntity $bcEntity -sourceType "bc" -statisticRun $statisticRun -bcHeader $bcHeader -snowAdminHeader $snowAdminHeader | Write-Result
+                    #$r.value
+                }            
+            }
+        }
+        if ($r.Success) {
+            $r=Set-wupStatRun -statisticRun $statisticRun
+        }
+        if ($r.Success) {
+            $r=New-Result -success $true -message "Successfully processed statistics [$($statisticRun.statisticsType)]" -value $null -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $false -message "Error processing statistics [$($statisticRun.statisticsType)]" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Set-wupStatRecordDiffs() {
+    param(
+
+    )
+    try {
+        $r=Get-wupSnowAuthHeader -adminToken
+        if ($r.Success) {
+            $snowAdminHeader=$r.Value
+            $r=Get-wupBCAuthHeader
+        }
+        if ($r.Success) {
+            $bcHeader=$r.value
+            $r=Set-wupBCURLJobworksheet -bcHeader $bcHeader
+        }
+        if ($r.Success) {
+            $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl
+        }
+        if ($r.success) {
+            $dvToken=$r.value
+            $r=Get-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_recorddiffs"
+        }
+        if ($r.success) {
+            $diffRecords=@()
+            $diffRecords+=$r.value
+            $(New-Result -success $true -message "Processing $($diffRecords.length) existing diff records from dv") | Write-Result -NoPassThru
+            $diffRecords | ? {$null -ne $_} | % {
+                $diffRecord=$_
+                if ($r.success) {
+                    $r=Set-wupStatDiff -dvBody $diffRecord -bcHeader $bcHeader -snowAdminHeader $snowAdminHeader
+                }
+            }
+        }
+        if ($r.success) {
+            $r=new-result -success $true -message "Successfully processed existing record diffs" -value $null -logLevel Information
+        }
+    } catch {
+        $r=new-result -success $false -message "Error processing existing record diffs" -exception $_.exception -logLevel Error
     }
     $r
 }
@@ -1482,6 +2094,198 @@ function Set-wupStatistics() {
         }
     } catch {
         $r=New-Result -success $false -message "Error setting widup statistics" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Get-wupMonQueueStatus() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$monitoringRecord
+    )
+    function LoadAllQueues() {
+        param(
+            $queueHeader
+        )
+        try {
+            $uri="$($global:QueueStorageUri)?comp=list"
+            $response=Invoke-WebRequest -Uri $uri -Headers $queueHeader -Method Get -UseBasicParsing
+            $allQueues=@()
+            $allQueues+=$([xml]$response.Content.Substring(3) | select -ExpandProperty EnumerationResults | select -ExpandProperty Queues | select -ExpandProperty Queue)
+            $queueInfo=$allQueues
+            $r=new-result -success $true -message "Successfully retrieved storage account queues" -value $queueInfo -logLevel Information
+        } catch {
+            $r=New-Result -success $true -message "Error retrieving storage account queues" -exception $_.exception -logLevel Error
+        }
+        $r
+    }
+    function LoadMessages() {
+        param(
+            $queueHeader,
+            $queueInfo
+        )
+        try {
+            $uri="$($global:QueueStorageUri)$($queueInfo.name)/messages?peekonly=true&numofmessages=32"
+            $response=Invoke-WebRequest -Uri $uri -Headers $queueHeader -Method Get -UseBasicParsing
+            $queueMessageInfo=[xml]$response.Content.Substring(3)
+            $queueInfo | Add-Member -MemberType NoteProperty -Name "numMessages" -Value $($queueMessageInfo.QueueMessagesList.QueueMessage.Count) -Force
+            $queueInfo | Add-Member -MemberType NoteProperty -Name "messages" -Value $($queueMessageInfo.QueueMessagesList.QueueMessage) -Force
+            if ($queueInfo.name -like "*-poison") {
+                $queueInfo | Add-Member -MemberType NoteProperty -Name "statusOK" -Value $($queueInfo.numMessages -eq 0) -Force
+            } else {
+                $statusOK=$true
+                if ($queueInfo.numMessages -gt 0) {
+                    $queueInfo.messages | %{
+                        if ((New-TimeSpan -Start $(get-date $_.insertionTime).ToUniversalTime() -end (get-date).ToUniversalTime()).TotalMinutes -gt $global:mthmaxminutesiteminqueue) {
+                            $statusOK=$false
+                        }
+                    }
+                }
+                $queueInfo | Add-Member -MemberType NoteProperty -Name "statusOK" -Value $statusOK -Force
+            }
+            $r=new-result -success $true -message "Successfully retrieved storage account queue information [$($queueInfo.name)]" -value $queueInfo -logLevel Information
+        } catch {
+            $r=New-Result -success $true -message "Error retrieving storage account queue information [$($queueInfo.name)]" -exception $_.exception -logLevel Error
+        }
+        $r
+    }
+    try {
+        $r=Get-AuthHeader -resourceURI $global:QueueStorageUri -additionalHeaderAttributes @{
+            'Accept' = 'text/xml'
+            'x-ms-version'='2017-11-09'
+        } | Write-Result
+        if ($r.Success) {
+            $queueHeader=$r.Value
+            $r=LoadAllQueues -queueHeader $queueHeader | Write-Result
+        }
+        if ($r.Success) {
+            $monitorDetails = $r.value
+            $allOk=$true
+            $monitorDetails | ? {$null -ne $_} | %{
+                if ($r.Success) {
+                    $r=LoadMessages -queueHeader $queueHeader -queueInfo $_ | Write-Result
+                    $allOk=$allOk -and $_.statusOK
+                }
+            }
+        }
+        if ($r.Success) {
+            $monitoringRecord.statusOk=$allOk
+            $monitoringRecord.details=$monitorDetails
+            $r=new-result -success $true -message "Successfully checked storage account queues" -value $monitoringRecord -logLevel Information
+        }       
+    } catch {
+        $r=New-Result -success $true -message "Error checking storage account queues" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Get-wupMonJobStatus() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$monitoringRecord
+    )
+    try {
+        $r=Get-wupApiSchema -doNotSetGlobalVariable | Write-Result
+        if ($r.Success) {
+            $apiSchema=$r.value
+            $apischema.syncJobs | ? {$_.frequencydeltasync.length -gt 0 -or $_.frequencyfullsync.length -gt 0} | %{
+                $job=$_
+                while ($job.nextJob.length -gt 0) {
+                    $nextjob=$apischema.syncJobs | ? {$_.rowKey -eq $job.nextJob}
+                    $nextjob.frequencydeltasync=$job.frequencydeltasync
+                    $nextjob.frequencyfullsync=$job.frequencyfullsync
+                    $job=$nextjob
+                }
+            }
+            $apischema.syncJobs=$apischema.syncJobs | ? {$_.frequencydeltasync.length -gt 0 -or $_.frequencyfullsync.length -gt 0}
+            $allOk=$true
+            $apischema.syncJobs | %{
+                $job=$_
+                $statusOK=$true            
+                $minutesSinceLastDeltaSync=(New-TimeSpan -Start $(get-date $job.lastdeltasyncat) -End $(get-date).ToUniversalTime()).TotalMinutes
+                $job | Add-Member -MemberType NoteProperty -Name "minutesSinceLastDeltaSync" -Value $minutesSinceLastDeltaSync -Force
+                if ($minutesSinceLastDeltaSync -gt $([int]$job.frequencydeltasync+$global:mthmaxminutessyncjobdelay)) {
+                    $statusOK=$false
+                }
+                $minutesSinceLastFullSync=(New-TimeSpan -Start $(get-date $job.lastfullsyncat) -End $(get-date).ToUniversalTime()).TotalMinutes
+                $job | Add-Member -MemberType NoteProperty -Name "minutesSinceLastFullSync" -Value $minutesSinceLastFullSync -Force
+                if ($minutesSinceLastFullSync -gt $job.frequencyfullsync+$global:mthmaxminutessyncjobdelay) {
+                    $statusOK=$false
+                }
+                $job | Add-Member -MemberType NoteProperty -Name "statusOK" -Value $statusOK
+                $allOk=$allOk -and $statusOK
+            }
+        }
+        if ($r.Success) {
+            $monitoringRecord.statusOK=$allOk
+            $monitoringRecord.details=$($apischema.syncJobs | select rowkey,recordtype,statusOK,lastdeltasyncat,lastfullsyncat,frequencydeltasync,frequencyfullsync,minutesSinceLastDeltaSync,minutesSinceLastFullSync)
+            $r=new-result -success $true -message "Successfully checked syncjobs" -value $monitoringRecord -logLevel Information
+        }
+    } catch {
+        $r=New-Result -success $true -message "Error checking syncjobs" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Get-wupMonDiffRecordStatus() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$monitoringRecord
+    )
+    try {
+        $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl | Write-Result
+        if ($r.success) {
+            $dvToken=$r.value
+            $r=Get-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_recorddiffs" | Write-Result
+        }
+        if ($r.success) {
+            $allOk=$true
+            $diffRecords=@()
+            $diffRecords+=$r.value
+            $diffRecords | ? {$null -ne $_} | % {
+                $dr=$_
+                $ageMinutes=(New-TimeSpan -Start $(Get-Date $dr.createdon) -end $(get-date).ToUniversalTime()).TotalMinutes
+                $statusOK=($ageMinutes -lt $global:mthmaxminutesrecorddiffage)
+                $dr | Add-Member -MemberType NoteProperty -Name "statusOK" -Value $statusOK
+                $dr | Add-Member -MemberType NoteProperty -Name "ageMinutes" -Value $ageMinutes
+                $allOk=$allOk -and $statusOK
+            }
+        }
+        if ($r.Success) {
+            $monitoringRecord.statusOK=$allOk
+            $monitoringRecord.details=$($diffRecords | select statusOK,ageMinutes,createdon,modifiedon,widup_namekey)
+            $r=new-result -success $true -message "Successfully checked diffrecords" -value $monitoringRecord -logLevel Information
+        }        
+    } catch {
+        $r=New-Result -success $true -message "Error checking diffrecords" -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Get-wupMonStatisticStatus() {
+    param(
+        [Parameter(ValueFromPipeline=$true)]$monitoringRecord
+    )
+    try {
+        $r=Get-AccessToken -resourceURI $global:dvEnvironmentUrl | Write-Result
+        if ($r.success) {
+            $dvToken=$r.value
+            $r=Get-DvData -envUri $global:dvEnvironmentUrl -accessToken $dvToken -tableName "widup_statisticruns" | Write-Result
+        }
+        if ($r.success) {
+            $allOk=$true
+            $statisticRunRecords=@()
+            $statisticRunRecords+=$r.value
+            $allOk=($statisticRunRecords.length -ge 4)
+            $statisticRunRecords | ? {$null -ne $_} | % {
+                $srr=$_
+                $ageMinutes=(New-TimeSpan -Start $(Get-Date $srr.modifiedon) -end $(get-date).ToUniversalTime()).TotalMinutes
+                $statusOK=($ageMinutes -lt $global:mthmaxminutesstatisticrunage -and $srr.widup_run -notlike "*timecarderrors*") -or ($ageMinutes -lt $global:mthmaxminutesstatisticruntcerrorsage -and $srr.widup_run -like "*timecarderrors*")
+                $srr | Add-Member -MemberType NoteProperty -Name "statusOK" -Value $statusOK
+                $srr | Add-Member -MemberType NoteProperty -Name "ageMinutes" -Value $ageMinutes
+                $allOk=$allOk -and $statusOK
+            }
+        }
+        if ($r.Success) {
+            $monitoringRecord.statusOK=$allOk
+            $monitoringRecord.details=$($statisticRunRecords | select statusOK,ageMinutes,createdon,modifiedon,widup_run)
+            $r=new-result -success $true -message "Successfully checked statisticrun record" -value $monitoringRecord -logLevel Information
+        }        
+    } catch {
+        $r=New-Result -success $true -message "Error checking statisticrun records" -exception $_.exception -logLevel Error
     }
     $r
 }

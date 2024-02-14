@@ -14,24 +14,8 @@ try {
         $r=Get-wupApiSchema | Write-Result
     }
     if ($r.Success) {
-        if ($syncJob.recordtype -eq 'employee') {
-            $r=Get-wupEmployeeDepartmentData | Write-Result
-        }
-    }
-    if ($r.Success) {
         $sourceData=$syncJob._sourceData
         $destinationData=Convert-wupBody -source $sourceData -sourceType $syncJob.sourcetype -recordType $syncJob.recordtype -destinationType "ad"
-        if ($syncJob.recordtype -eq 'employee') {
-            $destinationData | ? {$null -ne $_} | %{
-                $rec=$_
-                $depRec=$global:departmentData | ? {$_.departmentno -eq $rec.department}
-                if ($null -ne $depRec) {
-                    $depRec.psobject.properties | ? {$_.name -notin @('RowKey','PartitionKey','Timestamp')} | %{
-                        $rec | Add-Member -MemberType NoteProperty -Name $_.name -Value $_.value
-                    }
-                }
-            }
-        }
         $syncJob | Add-Member -MemberType NoteProperty -Name "_destinationData" -Value $destinationData
         if ($destinationData.Length -gt 0) {
             

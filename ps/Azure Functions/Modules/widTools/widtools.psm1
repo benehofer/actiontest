@@ -270,7 +270,7 @@ function Set-DvData() {
         )
         #@{"name"="If-None-Match";"value"=$ifnonmatch}
         if ($r.Success) {
-            $authHeader=$r.Value       
+            $authHeader=$r.Value
             try {
                 $response=Invoke-WebRequest -Headers $authHeader -Uri $uri -Body $body -Method $method -UseBasicParsing -ContentType "application/json; charset=utf-8"
                 #$response=Invoke-widWebRequest -Headers $authHeader -Uri $uri -Body $body -Method $method -UseBasicParsing -ContentType "application/json; charset=utf-8"
@@ -597,7 +597,7 @@ class dvBatch {
                     $responseIndex+=1
                 }
 
-<#
+ <#
                 responseBatchId=$responsecontent.substring(0,$responsecontent.IndexOf("`r`n"))
                 $responseIndex=0
                 @($responsecontent -split $responseBatchId | select -skip 1 | select -SkipLast 1) | ? {$null -ne $_} | %{
@@ -613,7 +613,7 @@ class dvBatch {
                     $responseIndex+=1
                 }
                 $r=New-Result -success $true -message "Successfully ran DV batch" -value $this.responses -logLevel Information
-#>
+ #>
 
                 #$r=New-Result -success $true -message "Successfully ran DV batch" -value $responseContent -logLevel Information
                 $r=New-Result -success $true -message "Successfully ran DV batch" -value $this.responses -logLevel Information

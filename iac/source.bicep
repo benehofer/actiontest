@@ -1,4 +1,3 @@
-
 //Storage Account
 resource sa 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storage_account_name
@@ -14,7 +13,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
 resource sa_queueService 'Microsoft.Storage/storageAccounts/queueServices@2022-09-01' = {
   name: 'default'
-  parent: sa  
+  parent: sa
 }
 
 resource sa_queue1 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-09-01' = {
@@ -62,6 +61,11 @@ resource sa_table3 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-
   parent: sa_tableService
 }
 
+resource sa_table4 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-09-01' = {
+  name: storage_account_location_table_name
+  parent: sa_tableService
+}
+
 resource sa_blobService 'Microsoft.Storage/storageAccounts/blobServices@2022-09-01' = {
   name: 'default'
   parent: sa
@@ -88,11 +92,13 @@ resource ai 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'other'
     WorkspaceResourceId: aiWS.id
+    Flow_Type: 'Bluefield'
+    Request_Source: 'rest'
   }
 }
 
 //Managed identity and role assignements
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: managed_identity_name
   location: location
 }
@@ -150,6 +156,8 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: asp.id
     siteConfig: {
       minTlsVersion: '1.2'
+      localMySqlEnabled: false
+      netFrameworkVersion: 'v4.6'
       cors: {
         allowedOrigins:[
           'https://portal.azure.com'
@@ -245,6 +253,18 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
           value: bc_url_jobledger
         }
         {
+          name: 'BC_URL_EMPLOYEEDIMENSIONS'
+          value: bc_url_employeedimensions
+        }
+        {
+          name: 'BC_URL_DEPARTMENTSUPERVISORS'
+          value: bc_url_departmentsupervisors
+        }
+        {
+          name: 'BC_URL_DEPARTMENTS'
+          value: bc_url_departments
+        }
+        {
           name: 'CRM_ENVIRONMENT_URL'
           value: crm_environment_url
         }
@@ -291,6 +311,10 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'DEPARTMENT_TABLE_NAME'
           value: storage_account_department_table_name
+        }
+        {
+          name: 'LOCATION_TABLE_NAME'
+          value: storage_account_location_table_name
         }        
         {
           name: 'SYNCJOB_TABLE_NAME'
@@ -385,6 +409,10 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
           value: '${dv_environment_url}${dv_url_statisticrun}'
         }
         {
+          name: 'DV_URL_RECORDDIFF'
+          value: '${dv_environment_url}${dv_url_recorddiff}'
+        }
+        {
           name: 'BLOB_STORAGE_URI'
           value: sa.properties.primaryEndpoints.blob
         }
@@ -419,7 +447,27 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'AD_ASSIGNMENTGROUP_PREFIX'
           value: ad_assignmentgroup_prefix
-        }               
+        }
+        {
+          name: 'MTH_MAX_MINUTES_ITEM_IN_QUEUE'
+          value: mth_max_minutes_item_in_queue
+        }
+        {
+          name: 'MTH_MAX_MINUTES_SYNCJOB_DELAY'
+          value: mth_max_minutes_syncjob_delay
+        }
+        {
+          name: 'MTH_MAX_MINUTES_RECORDDIFF_AGE'
+          value: mth_max_minutes_recorddiff_age
+        }
+        {
+          name: 'MTH_MAX_MINUTES_STATISTICRUN_AGE'
+          value: mth_max_minutes_statisticrun_age
+        }
+        {
+          name: 'MTH_MAX_MINUTES_STATISTICRUN_TCERRORS_AGE'
+          value: mth_max_minutes_statisticrun_tcerrors_age
+        }
       ]
     }
     httpsOnly: true

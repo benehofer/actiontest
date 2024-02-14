@@ -27,6 +27,11 @@ try {
             if ($r.Success) {
                 $sourceData=$r.Value
                 if ($null -eq $sourceData) {$sourceData=@()}
+                if ($syncJob.recordtype -eq 'employee') {
+                    $r=Set-wupEmployeeData -sourceData $sourceData | Write-Result
+                }
+            }
+            if ($r.success) {
                 $syncJob | Add-Member -MemberType NoteProperty -Name "_started" -Value (get-date).ToString("s")
                 $syncJob | Add-Member -MemberType NoteProperty -Name "_sourceData" -Value $sourceData
                 $queueName=$(Invoke-Command([scriptblock]::Create("`$global:$($syncjob.destinationType)queuename")))
@@ -53,10 +58,10 @@ try {
                                 $r=Set-wupSyncJob -syncJob $nextJob -queued | Write-Result
                             }                        
                         } else {
-                            $r=New-Result -success $false -message "Next job still/already queued: [$($nextJob.queuedat)]" -logLevel Error | Write-Result
+                            $r=New-Result -success $true -message "Next job still/already queued: [$($nextJob.queuedat)]" -logLevel Error | Write-Result
                         }
                     } else {
-                        $r=New-Result -success $false -message "Next job not found: [$($syncJob.nextJob)]" -logLevel Error | Write-Result
+                        $r=New-Result -success $true -message "Next job not found: [$($syncJob.nextJob)]" -logLevel Error | Write-Result
                     }
                 } else {
                     if ($syncJob._runSingle) {
