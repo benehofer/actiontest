@@ -204,7 +204,7 @@ resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2023-08-01'={
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${resourceId('rg-hofb-swa-tst-sn-01', 'Microsoft.ManagedIdentity/userAssignedIdentities', bicep_managed_identity_name)}': {}
+      '${resourceId(resource_group_name, 'Microsoft.ManagedIdentity/userAssignedIdentities', bicep_managed_identity_name)}': {}
     }
   }
   properties: {

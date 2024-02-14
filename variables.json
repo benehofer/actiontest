@@ -22,6 +22,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "rg-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "rg-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-rg-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rg-{projectshortname}-{instance}"
             }
@@ -31,6 +32,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "sa{ownershortname}{projectshortname}{stageshortname}{locationshortname}{instance}",
+                "WIDDEVPRD": "sa{ownershortname}{projectshortname}{stageshortname}{locationshortname}{instance}",
                 "WagnerTest": "widsa{projectshortname}{instance}",
                 "WagnerProd": "widst{projectshortname}{instance}"
             }
@@ -95,8 +97,19 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "id-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "id-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-id-{projectshortname}-{instance}",
                 "WagnerProd": "wid-id-{projectshortname}-{instance}"
+            }
+        },
+        "bicep_managed_identity_name": {
+            "description": "The name of the managed identity for the bicep deployment script",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "id-{ownershortname}-{projectshortname}bcp-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "id-{ownershortname}-{projectshortname}bcp-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-id-{projectshortname}bcp-{instance}",
+                "WagnerProd": "wid-id-{projectshortname}bcp-{instance}"
             }
         },
         "storageblobdatacontributor_role_id": {
@@ -119,6 +132,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "https://{function_app_name}.azurewebsites.net/",
+                "WIDDEVPRD": "https://{function_app_name}.azurewebsites.net/",
                 "WagnerTest": "https://{function_app_name}.azurewebsites.net/",
                 "WagnerProd": "https://{function_app_name}.azurewebsites.net/"
             }
@@ -128,6 +142,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "log-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "log-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-log-{projectshortname}-{instance}",
                 "WagnerProd": "wid-law-{projectshortname}-{instance}"
             }
@@ -137,6 +152,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "appi-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "appi-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-appi-{projectshortname}-{instance}",
                 "WagnerProd": "wid-appi-{projectshortname}-{instance}"
             }
@@ -161,6 +177,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "func-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "func-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-func-{projectshortname}-{instance}",
                 "WagnerProd": "wid-func-{projectshortname}-{instance}"
             }
@@ -170,6 +187,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "plan-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "plan-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-plan-{projectshortname}-{instance}",
                 "WagnerProd": "wid-plan-{projectshortname}-{instance}"
             }
@@ -183,6 +201,7 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "rns-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "rns-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-rns-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rln-{projectshortname}-{instance}"
             }
@@ -192,9 +211,50 @@
             "type": "string",
             "schema": {
                 "WIDDEV": "hycon-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "hycon-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-hycon-{projectshortname}-{instance}",
                 "WagnerProd": "wid-rlhc-{projectshortname}-{instance}"
             }
+        },
+        "static_web_app_name": {
+            "description": "The name of the registered application for the authentication of the static web app",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "swa-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "swa-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-swa-{projectshortname}-{instance}",
+                "WagnerProd": "wid-swa-{projectshortname}-{instance}"
+            }
+        },
+        "swa_managed_identity_name": {
+            "description": "The name of the managed identity of the static web app",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "id-{ownershortname}-{projectshortname}swa-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "id-{ownershortname}-{projectshortname}swa-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-id-{projectshortname}swa-{instance}",
+                "WagnerProd": "wid-id-{projectshortname}swa-{instance}"
+            }
+        },
+        "swa_registered_app_name": {
+            "description": "The name of the registered application for the authentication of the static web app",
+            "type": "string",
+            "schema":{
+                "WIDDEV": "app-{ownershortname}-{projectshortname}swa-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "app-{ownershortname}-{projectshortname}swa-{stageshortname}-{locationshortname}-{instance}",
+                "WagnerTest": "wid-app-{projectshortname}swa-{instance}",
+                "WagnerProd": "wid-app-{projectshortname}swa-{instance}"
+            }
+        },
+        "swa_registered_app_client_id_kvsecretname": {
+            "description": "The key vault secret name for the username of the ADDS user (admin)",
+            "type": "string",
+            "value": "swa-app-client-id"
+        },
+        "swa_registered_app_client_secret_kvsecretname": {
+            "description": "The key vault secret name for the username of the ADDS user (admin)",
+            "type": "string",
+            "value": "swa-app-client-secret"
         },
         "hycon_adserver_name": {
             "description": "The fqdn of the ad server name used in the hybrid connection",
@@ -242,6 +302,7 @@
             "type": "string",
             "schema":{
                 "WIDDEV": "vault-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
+                "WIDDEVPRD": "vault-{ownershortname}-{projectshortname}-{stageshortname}-{locationshortname}-{instance}",
                 "WagnerTest": "wid-vault-{projectshortname}-{instance}",
                 "WagnerProd": "wid-kv-{projectshortname}-{instance}"
             }        
@@ -498,6 +559,46 @@
         "bc_url_employeedimensions": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsEmployeeDimensions"},
         "bc_url_departmentsupervisors": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartmentSupervisors"},
         "bc_url_departments": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/swsDepartments"},
+        "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
+        "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
+        "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},
+        "snow_url_debitor": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_debitor"},
+        "snow_table_url_debitor": {"value": ""},
+        "snow_table_url_jobhead": {"value": ""},
+        "snow_table_url_jobtask": {"value": ""},
+        "snow_table_url_jobplanningline": {"value": ""},
+        "snow_table_url_journal": {"value": ""},
+        "snow_table_url_outbound_message": {"value": ""}
+    },
+    "WIDDEVPRD": {
+        "target_subscription_id" : {"value": "281a469b-3f25-4913-9644-efb65d48a83f"},
+        "tenant_id": {"value": "f6819965-9fb4-4295-b341-4d250431078c"},
+        "tenant_name":{"value": "wid.dev"},
+        "ownershortname":{"value": "hofb"},
+        "projectshortname":{"value": "wup"},
+        "stageshortname":{"value": "prd"},
+        "locationshortname":{"value": "sn"},
+        "instance":{"value": "01"},
+        "function_app_vnet_integration_subnet_id":{"value": "/subscriptions/281a469b-3f25-4913-9644-efb65d48a83f/resourceGroups/rg-hofb-net-shd-sn-01/providers/Microsoft.Network/virtualNetworks/vnet-hofb-net-shd-sn-01/subnets/snet-with-webserverfarm-delegation"},
+        "hycon_adserver_name": {"value": "adserver"},
+        "ad_username": {"value": "admin"},
+        "ad_userpassword": {"value": "dummy"},
+        "ad_useroupath": {"value": "cn=Users,dc=testwid,dc=local"},
+        "ad_groupoupath": {"value": "cn=Users,dc=testwid,dc=local"},
+        "ad_assignmentgroup_prefix": {"value": "GG_"},
+        "crm_environment_url" :{"value": "https://org818ba903.crm17.dynamics.com"},
+        "dv_environment_url" :{"value": "https://org159ce083.crm17.dynamics.com"},
+        "dv_environment_id" :{"value": "Default-f6819965-9fb4-4295-b341-4d250431078c"},
+        "dv_environment_solutionname": {"value": "widup"},
+        "dv_environment_publisherprefix": {"value": "widup"},
+        "bc_url_jobhead": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobsHeaders"},
+        "bc_url_jobtask": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobTasks"},
+        "bc_url_jobplanningline": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobPlanningLines"},
+        "bc_url_debitor": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/customer/v1.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/customers"},
+        "bc_url_journal": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals"},
+        "bc_url_jobworksheet": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/journals(###journalid###)/jobWorksheets"},
+        "bc_url_employee": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/salary/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/employees"},
+        "bc_url_jobledger": {"value": "https://api.businesscentral.dynamics.com/v2.0/DEV/api/beeDynamics/job/v2.0/companies(2cbb34a6-23b4-ed11-9a88-002248f315c6)/jobLedgerEntries"},
         "snow_url_jobhead": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektkopf"},
         "snow_url_jobtask": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektaufgabe"},
         "snow_url_jobplanningline": {"value": "https://wagnerdev.service-now.com/api/now/import/u_import_msbc_projektplanzeile"},

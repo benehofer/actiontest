@@ -1,3 +1,5 @@
+param currentTime string = utcNow()
+
 //Storage Account
 resource sa 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storage_account_name
@@ -120,7 +122,6 @@ resource mi_role_storageBlobDataContributor 'Microsoft.Authorization/roleAssignm
     principalType: 'ServicePrincipal'
   }
 }
-
 resource mi_storageQueueDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(sa.id, mi.id, storagequeuedatacontributor_role_id)
   scope: sa
@@ -130,6 +131,30 @@ resource mi_storageQueueDataContributor 'Microsoft.Authorization/roleAssignments
     principalType: 'ServicePrincipal'
   }
 }
+resource mi_keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(kv.id, mi.id, keyvaultsecretsuser_role_id)
+  scope: kv
+  properties: {
+    principalId: mi.properties.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions',keyvaultsecretsuser_role_id)
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource mi_swa 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: swa_managed_identity_name
+  location: location
+}
+resource mi_swa_keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(kv.id, mi_swa.id, keyvaultsecretsuser_role_id)
+  scope: kv
+  properties: {
+    principalId: mi_swa.properties.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions',keyvaultsecretsuser_role_id)
+    principalType: 'ServicePrincipal'
+  }
+}
+
 
 //App Plan
 resource asp 'Microsoft.Web/serverfarms@2022-03-01' = {
@@ -585,7 +610,6 @@ resource kv 'Microsoft.KeyVault/vaults@2022-07-01' = {
     }
   }
 }
-
 resource kvs_adusername 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   parent: kv
   name: ad_username_kvsecretname
@@ -593,7 +617,6 @@ resource kvs_adusername 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
     value: ad_username
   }
 }
-
 resource kvs_aduserpassword 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   parent: kv
   name: ad_userpassword_kvsecretname
@@ -601,13 +624,123 @@ resource kvs_aduserpassword 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
     value: ad_userpassword
   }
 }
-
-resource mi_keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(kv.id, mi.id, keyvaultsecretsuser_role_id)
-  scope: kv
+resource kvs_clientID 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  parent: kv
+  name: swa_registered_app_client_id_kvsecretname
   properties: {
-    principalId: mi.properties.principalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions',keyvaultsecretsuser_role_id)
-    principalType: 'ServicePrincipal'
+      value: scriptAppReg.properties.outputs.clientId
+  }
+}
+resource kvs_clientSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  parent: kv
+  name: swa_registered_app_client_secret_kvsecretname
+  properties: {
+      value: scriptAppReg.properties.outputs.clientSecret
+  }
+}
+
+//Script deployment resource for registered application/service principal for swa
+resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2023-08-01'={
+  name: 'RegisterAppForSWA'
+  location: location
+  kind: 'AzurePowerShell'
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${resourceId(resource_group_name, 'Microsoft.ManagedIdentity/userAssignedIdentities', bicep_managed_identity_name)}': {}
+    }
+  }
+  properties: {
+    azPowerShellVersion: '5.0'
+    arguments: '-resourceName "${swa_registered_app_name}"'
+    scriptContent: '''
+      param([string] $resourceName)
+      $token = (Get-AzAccessToken -ResourceUrl https://graph.microsoft.com).Token
+      $headers = @{'Content-Type' = 'application/json'; 'Authorization' = 'Bearer ' + $token}
+
+      $appRegTmpl = @{
+        displayName = $resourceName
+        requiredResourceAccess = @(
+          @{
+            resourceAppId = "00000003-0000-0000-c000-000000000000"
+            resourceAccess = @(
+              @{
+                id = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
+                type = "Scope"
+              }
+            )
+          }
+        )
+        signInAudience = "AzureADMyOrg"
+      }
+      
+      # Upsert App registration
+      $app = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/beta/applications?filter=displayName eq '$($resourceName)'").value
+      $principal = @{}
+      if ($app) {
+        $ignore = Invoke-RestMethod -Method Patch -Headers $headers -Uri "https://graph.microsoft.com/beta/applications/$($app.id)" -Body ($appRegTmpl | ConvertTo-Json -Depth 10)
+        $principal = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/beta/servicePrincipals?filter=appId eq '$($app.appId)'").value
+      } else {
+        $app = (Invoke-RestMethod -Method Post -Headers $headers -Uri "https://graph.microsoft.com/beta/applications" -Body ($appRegTmpl | ConvertTo-Json -Depth 10))
+        $principal = Invoke-RestMethod -Method POST -Headers $headers -Uri  "https://graph.microsoft.com/beta/servicePrincipals" -Body (@{ "appId" = $app.appId } | ConvertTo-Json)
+      }
+      
+      # Creating client secret
+      $app = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/beta/applications/$($app.id)")
+      
+      foreach ($password in $app.passwordCredentials) {
+        Write-Host "Deleting secret with id: $($password.keyId)"
+        $body = @{
+          "keyId" = $password.keyId
+        }
+        $ignore = Invoke-RestMethod -Method POST -Headers $headers -Uri "https://graph.microsoft.com/beta/applications/$($app.id)/removePassword" -Body ($body | ConvertTo-Json)
+      }
+      
+      $body = @{
+        "passwordCredential" = @{
+          "displayName"= "Client Secret"
+        }
+      }
+      $secret = (Invoke-RestMethod -Method POST -Headers $headers -Uri  "https://graph.microsoft.com/beta/applications/$($app.id)/addPassword" -Body ($body | ConvertTo-Json)).secretText
+      
+      $DeploymentScriptOutputs = @{}
+      $DeploymentScriptOutputs['objectId'] = $app.id
+      $DeploymentScriptOutputs['clientId'] = $app.appId
+      $DeploymentScriptOutputs['clientSecret'] = $secret
+      $DeploymentScriptOutputs['principalId'] = $principal.id
+
+    '''
+    cleanupPreference: 'OnSuccess'
+    retentionInterval: 'P1D'
+    forceUpdateTag: currentTime // ensures script will run every time
+  }
+}
+
+resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
+  name: static_web_app_name
+  location: 'westeurope'
+  sku: {
+    name: 'Standard'
+    tier: 'Standard'
+  }
+  properties: {
+    stagingEnvironmentPolicy: 'Enabled'
+    allowConfigFileUpdates: true
+    provider: 'None'
+    enterpriseGradeCdnStatus: 'Disabled'
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${mi_swa.id}': {}
+    }    
+  }
+  resource config 'config@2022-09-01' = {
+    name: 'appsettings'
+    kind: 'string'
+    properties: {
+      APP_CLIENT_ID: '@Microsoft.KeyVault(SecretUri=${kvs_clientID.properties.secretUri})'
+      APP_CLIENT_SECRET: '@Microsoft.KeyVault(SecretUri=${kvs_clientSecret.properties.secretUri})'
+    }
   }
 }

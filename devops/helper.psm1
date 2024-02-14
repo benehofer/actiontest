@@ -149,10 +149,13 @@ function Set-dplDirectoryIac() {
 
         $s=""
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
+        $s+='$mi=$((az identity create -g "' + $($variableDefinition.variables.resource_group_name.value) + '" -n "' + $($variableDefinition.variables.bicep_managed_identity_name.value) + '") | convertfrom-json)' + "`r`n"
+        $s+='$role=$((az rest --headers Content-Type=application/json --method POST --uri ' + "'" + 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments' + "'" + ' --body $(' + "'" + '{\"principalId\": \"' + "'" + ' + $($mi.principalId) + ' + "'" + '\", \"roleDefinitionId\": \"9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3\", \"directoryScopeId\": \"/\"}' + "'" + ')) | convertfrom-json)' + "`r`n"
         $s+='$output=$(az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '")' + "`r`n"
         $s+='@(0..$($output.length-1)) | %{' + "`r`n"
         $s+='    Write-Host $output[$_]' + "`r`n"
         $s+='}' + "`r`n"
+        $s+='$mi=$((az identity delete -g "' + $($variableDefinition.variables.resource_group_name.value) + '" -n "' + $($variableDefinition.variables.bicep_managed_identity_name.value) + '") | convertfrom-json)' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.json"
