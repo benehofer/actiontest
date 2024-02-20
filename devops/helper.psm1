@@ -237,7 +237,17 @@ function Set-dplDirectoryDoc() {
     try {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
         "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\index.html" -Encoding utf8
+
         
+
+        $s='Write-Host -message "No plan mode for doc deployment"'
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
+
+        $s="Write-Host 'Preparing documentation deployment'" + "`r`n"
+        $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip" --only-show-errors) | convertfrom-json' + "`r`n"
+
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
+
         $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error creating doc deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            

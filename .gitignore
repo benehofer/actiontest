@@ -1,2 +1,3 @@
 source/Snippets/*
-deployment/*
+deployment/*/*
+deployment/iac/main.bicep

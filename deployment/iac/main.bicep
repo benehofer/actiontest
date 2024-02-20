@@ -934,8 +934,8 @@ resource kvs_clientSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   }
 }
 
-//Script deployment resource for registered application/service principal for swa --> version @2023-08-01
-resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2020-10-01'={
+//Script deployment resource for registered application/service principal for swa
+resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2023-08-01'={
   name: 'RegisterAppForSWA'
   location: location
   kind: 'AzurePowerShell'
@@ -1011,7 +1011,6 @@ resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2020-10-01'={
   }
 }
 
-//Static web app for config
 resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
   name: static_web_app_name
   location: 'westeurope'
