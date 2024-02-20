@@ -8,7 +8,7 @@ $InformationPreference="Continue"
 $r=Get-dplVariableDefinition -targetEnvironmentName $appEnv | Write-dplResult
 if ($r.Success) {
     $variableDefinition=$r.Value
-    $r=Set-dplDirectoryPS -variableDefinition $variableDefinition -deploymentDirectory $dpDir | Write-dplResult
+    $r=Set-dplDirectoryDoc -variableDefinition $variableDefinition -deploymentDirectory $dpDir | Write-dplResult
 }
 
 if (!($r.Success)) {
