@@ -123,6 +123,15 @@ function Get-dplVariableDefinition() {
     }
     $r
 }
+function Set-dplDeploymentDirectory() {
+    param(
+        $deploymentDirectory
+    )
+    if (Test-Path $deploymentDirectory) {
+        remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
+}
 function Set-dplDirectoryIac() {
     param(
         $variableDefinition,
@@ -131,10 +140,7 @@ function Set-dplDirectoryIac() {
         $bicepOptionsFile=".\iac\bicepconfig.json"
     )
     try {
-        if (Test-Path $deploymentDirectory) {
-            remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
+        Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
         $bicepSource=gc -path $bicepTemplateFile -Raw -Encoding UTF8
         $bicepSource=$($variableDefinition.variableString)+"`r`n"+"`r`n"+$bicepSource
         $bicepSource | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\main.bicep"
@@ -171,10 +177,7 @@ function Set-dplDirectoryPS() {
         $deploymentDirectory
     )
     try {
-        if (Test-Path $deploymentDirectory) {
-            remove-item -path $deploymentDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        New-Item -Path $deploymentDirectory -ItemType Directory | Out-Null
+        Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
         $solutionBasePath="ps\Azure Functions"
         $rgName=$variableDefinition.variables.resource_group_name.value
         $funcName=$variableDefinition.variables.function_app_name.value
@@ -225,6 +228,23 @@ function Set-dplDirectoryPS() {
     $r
     #az functionapp deployment source config-zip -g $rgname -n $funcname --src $zipPath
 }
+
+function Set-dplDirectoryDoc() {
+    param(
+        $variableDefinition,
+        $deploymentDirectory
+    )
+    try {
+        Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
+        "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\index.html" -Encoding utf8
+        
+        $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message "Error creating doc deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
+    }
+    $r
+}
+
 function Get-dplHttpAuthHeader() {
     param(
         $resourceURI,
