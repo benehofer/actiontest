@@ -675,11 +675,11 @@ resource scriptAppReg 'Microsoft.Resources/deploymentScripts@2023-08-01'={
       }
       
       # Upsert App registration
-      $app = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/v1.0/applications?filter=displayName eq '$($resourceName)'").value
+      $app = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=displayName eq '$($resourceName)'").value
       $principal = @{}
       if ($app) {
         $ignore = Invoke-RestMethod -Method Patch -Headers $headers -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)" -Body ($appRegTmpl | ConvertTo-Json -Depth 10)
-        $principal = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?filter=appId eq '$($app.appId)'").value
+        $principal = (Invoke-RestMethod -Method Get -Headers $headers -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$($app.appId)'").value
       } else {
         $app = (Invoke-RestMethod -Method Post -Headers $headers -Uri "https://graph.microsoft.com/v1.0/applications" -Body ($appRegTmpl | ConvertTo-Json -Depth 10))
         $principal = Invoke-RestMethod -Method POST -Headers $headers -Uri  "https://graph.microsoft.com/v1.0/servicePrincipals" -Body (@{ "appId" = $app.appId } | ConvertTo-Json)
