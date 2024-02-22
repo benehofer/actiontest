@@ -247,8 +247,19 @@ function Set-dplDirectoryDoc() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s="Write-Host 'Preparing documentation deployment'" + "`r`n"
-        $s+='$output=$(az functionapp deployment source config-zip -g "' + $($rgName) + '" -n "' + $($funcName) + '" --src "' + $($funcName) + '.zip" --only-show-errors) | convertfrom-json' + "`r`n"
-
+        $s+='$swatoken=$(az staticwebapp secrets list --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv --query "properties.apiKey")' + "`r`n"
+        $s+='echo "SWATOKEN=$swatoken" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append' + "`r`n"
+        $s+='$swaUrl="https://$($(az staticwebapp show --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv  --query "defaultHostname"))/.auth/login/aad/callback"' + "`r`n"
+        $s+='$appid=$((az ad app list --display-name "' + $($variableDefinition.variables.swa_registered_app_name.value) + '") | convertfrom-json | select -first 1 | select -expandproperty appid)' + "`r`n"
+        $s+='az ad app update --id $appid --web-redirect-uris $swaUrl --enable-id-token-issuance' + "`r`n"
+        <#
+        gci
+        $swatoken=$(az staticwebapp secrets list --name "' + $() + '" -o tsv --query "properties.apiKey")
+        echo "SWATOKEN=$swatoken" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        $swatoken=$(az staticwebapp secrets list --name 'stapp-hofb-wup-tst-sn-01' -o tsv --query "properties.apiKey")
+        $swaUrl="https://$($(az staticwebapp show --name 'stapp-hofb-wup-tst-sn-01' -o tsv  --query "defaultHostname"))/.auth/login/aad/callback"  
+        az ad app update --id $appid --web-redirect-uris $swaUrl --enable-id-token-issuance
+        #>
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
