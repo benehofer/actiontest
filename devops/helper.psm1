@@ -251,6 +251,7 @@ function Set-dplDirectoryDoc() {
     )
     try {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
+        New-item -Path "$($deploymentDirectory)\doc" -ItemType Directory
         "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\doc\index.html" -Encoding utf8
         $c=Get-Content -Path ".\doc\staticwebapp.config.source" -Encoding UTF8 -Raw
         $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenantid.value)
