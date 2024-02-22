@@ -251,9 +251,10 @@ function Set-dplDirectoryDoc() {
     )
     try {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
-        "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\index.html" -Encoding utf8
-
-        
+        "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\doc\index.html" -Encoding utf8
+        $c=Get-Content -Path ".\doc\staticwebapp.config.source" -Encoding UTF8 -Raw
+        $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenantid.value)
+        $c | out-file "$($deploymentDirectory)\doc\staticwebapp.config.json" -Encoding utf8       
 
         $s='Write-Host -message "No plan mode for doc deployment"'
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
@@ -263,14 +264,6 @@ function Set-dplDirectoryDoc() {
         $s+='$swatoken=$(az staticwebapp secrets list --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv --query "properties.apiKey")' + "`r`n"
         $s+='Write-Host "Setting github actions environment variable for swatoken"'+"`r`n"
         $s+='echo "SWATOKEN=$swatoken" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append' + "`r`n"
-        <#
-        gci
-        $swatoken=$(az staticwebapp secrets list --name "' + $() + '" -o tsv --query "properties.apiKey")
-        echo "SWATOKEN=$swatoken" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-        $swatoken=$(az staticwebapp secrets list --name 'stapp-hofb-wup-tst-sn-01' -o tsv --query "properties.apiKey")
-        $swaUrl="https://$($(az staticwebapp show --name 'stapp-hofb-wup-tst-sn-01' -o tsv  --query "defaultHostname"))/.auth/login/aad/callback"  
-        az ad app update --id $appid --web-redirect-uris $swaUrl --enable-id-token-issuance
-        #>
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information

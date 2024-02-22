@@ -76,3 +76,16 @@ jobs:
       workflowtype: ps
       mode: apply
     secrets: inherit      
+  
+  apply-integration-doc:
+    needs: [build-doc, plan-integration-iac, apply-integration-iac, apply-integration-ps]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-doc.result,'success')  }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deployswa.yaml
+    with:
+      doenv: 'Integration'
+      workflowtype: ps
+      mode: apply
+    secrets: inherit      
