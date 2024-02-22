@@ -154,17 +154,29 @@ function Set-dplDirectoryIac() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s=""
+        $s+='Write-Host "Creating resource group"'+"`r`n"
         $s+='az group create --name "' + $($variableDefinition.variables.resource_group_name.value) + '" --location "' + $($variableDefinition.variables.location.value) + '"' + "`r`n"
+        $s+='Write-Host "Deleting bicep managed identity for bicep script deployment"'+"`r`n"
         $s+='$mi=$((az identity delete -g "' + $($variableDefinition.variables.resource_group_name.value) + '" -n "' + $($variableDefinition.variables.bicep_managed_identity_name.value) + '") | convertfrom-json)' + "`r`n"
         $s+='Start-Sleep -seconds 20' + "`r`n"
+        $s+='Write-Host "Creating new managed identity for bicep script deployment"'+"`r`n"
         $s+='$mi=$((az identity create -g "' + $($variableDefinition.variables.resource_group_name.value) + '" -n "' + $($variableDefinition.variables.bicep_managed_identity_name.value) + '") | convertfrom-json)' + "`r`n"
         $s+='Start-Sleep -seconds 20' + "`r`n"
+        $s+='Write-Host "Assigning application administrator role to managed identity for bicep script deployment"'+"`r`n"
         $s+='$role=$((az rest --headers Content-Type=application/json --method POST --uri ' + "'" + 'https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments' + "'" + ' --body $(' + "'" + '{\"principalId\": \"' + "'" + ' + $($mi.principalId) + ' + "'" + '\", \"roleDefinitionId\": \"9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3\", \"directoryScopeId\": \"/\"}' + "'" + ')) | convertfrom-json)' + "`r`n"
+        $s+='Write-Host "Deploying resources using bicep"'+"`r`n"
         $s+='$output=$(az deployment group create --resource-group "' + $($variableDefinition.variables.resource_group_name.value) + '" --template-file "' + "main.bicep" + '")' + "`r`n"
         $s+='@(0..$($output.length-1)) | %{' + "`r`n"
         $s+='    Write-Host $output[$_]' + "`r`n"
         $s+='}' + "`r`n"
+        $s+='Write-Host "Deleting bicep managed identity for bicep script deployment"'+"`r`n"
         $s+='$mi=$((az identity delete -g "' + $($variableDefinition.variables.resource_group_name.value) + '" -n "' + $($variableDefinition.variables.bicep_managed_identity_name.value) + '") | convertfrom-json)' + "`r`n"
+        $s+='Write-Host "Retrieving url of deployed static web app"'+"`r`n"
+        $s+='$swaUrl="https://$($(az staticwebapp show --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv  --query "defaultHostname"))/.auth/login/aad/callback"' + "`r`n"
+        $s+='Write-Host "Retrieving registered application deployed for swa authentication"'+"`r`n"
+        $s+='$appid=$((az ad app list --display-name "' + $($variableDefinition.variables.swa_registered_app_name.value) + '") | convertfrom-json | select -first 1 | select -expandproperty appid)' + "`r`n"
+        $s+='Write-Host "Setting redirect url of registered application"'+"`r`n"
+        $s+='az ad app update --id $appid --web-redirect-uris $swaUrl --enable-id-token-issuance' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         Copy-Item -Path $bicepOptionsFile -Destination "$($deploymentDirectory)\bicepconfig.json"
@@ -247,11 +259,10 @@ function Set-dplDirectoryDoc() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s="Write-Host 'Preparing documentation deployment'" + "`r`n"
+        $s+='Write-Host "Retrieving deployment token from static web app"'+"`r`n"
         $s+='$swatoken=$(az staticwebapp secrets list --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv --query "properties.apiKey")' + "`r`n"
+        $s+='Write-Host "Setting github actions environment variable for swatoken"'+"`r`n"
         $s+='echo "SWATOKEN=$swatoken" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append' + "`r`n"
-        $s+='$swaUrl="https://$($(az staticwebapp show --name "' + $($variableDefinition.variables.static_web_app_name.value) + '" -o tsv  --query "defaultHostname"))/.auth/login/aad/callback"' + "`r`n"
-        $s+='$appid=$((az ad app list --display-name "' + $($variableDefinition.variables.swa_registered_app_name.value) + '") | convertfrom-json | select -first 1 | select -expandproperty appid)' + "`r`n"
-        $s+='az ad app update --id $appid --web-redirect-uris $swaUrl --enable-id-token-issuance' + "`r`n"
         <#
         gci
         $swatoken=$(az staticwebapp secrets list --name "' + $() + '" -o tsv --query "properties.apiKey")
