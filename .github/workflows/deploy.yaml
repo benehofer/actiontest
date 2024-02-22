@@ -86,6 +86,6 @@ jobs:
     uses: ./.github/workflows/template-deployswa.yaml
     with:
       doenv: 'Integration'
-      workflowtype: ps
+      workflowtype: doc
       mode: apply
-    secrets: inherit      
+    secrets: inherit   
