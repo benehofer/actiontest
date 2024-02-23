@@ -254,7 +254,7 @@ function Set-dplDirectoryDoc() {
         New-item -Path "$($deploymentDirectory)\doc" -ItemType Directory
         "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\doc\index.html" -Encoding utf8
         $c=Get-Content -Path ".\doc\staticwebapp.config.source" -Encoding UTF8 -Raw
-        $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenantid.value)
+        $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenant_id.value)
         $c | out-file "$($deploymentDirectory)\doc\staticwebapp.config.json" -Encoding utf8       
 
         $s='Write-Host -message "No plan mode for doc deployment"'
