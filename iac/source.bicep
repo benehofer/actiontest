@@ -739,8 +739,8 @@ resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
     name: 'appsettings'
     kind: 'string'
     properties: {
-      APP_CLIENT_ID: '@Microsoft.KeyVault(SecretUri=${kvs_clientID.properties.secretUri})'
-      APP_CLIENT_SECRET: '@Microsoft.KeyVault(SecretUri=${kvs_clientSecret.properties.secretUri})'
+      APP_CLIENT_ID: scriptAppReg.properties.outputs.clientId
+      APP_CLIENT_SECRET: scriptAppReg.properties.outputs.clientSecret
     }
   }
 }
