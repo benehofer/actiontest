@@ -255,7 +255,7 @@ function Set-dplDirectoryDoc() {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
         New-item -Path "$($deploymentDirectory)\doc" -ItemType Directory
         ipmo .\devops\docHelper.psm1 -force
-        set-wupDoc -htmlOutputPath "$($deploymentDirectory)\doc"
+        set-wupDok -htmlOutputPath "$($deploymentDirectory)\doc"
         $c=Get-Content -Path ".\doc\staticwebapp.config.source" -Encoding UTF8 -Raw
         $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenant_id.value)
         $c | out-file "$($deploymentDirectory)\doc\staticwebapp.config.json" -Encoding utf8       
