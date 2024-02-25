@@ -1,3 +1,6 @@
+
+
+
 function New-Result() {
     param(
         [parameter(Mandatory=$true)][bool]$success,
@@ -243,7 +246,6 @@ function Set-dplDirectoryPS() {
     $r
     #az functionapp deployment source config-zip -g $rgname -n $funcname --src $zipPath
 }
-
 function Set-dplDirectoryDoc() {
     param(
         $variableDefinition,
@@ -252,8 +254,8 @@ function Set-dplDirectoryDoc() {
     try {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
         New-item -Path "$($deploymentDirectory)\doc" -ItemType Directory
-        "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\doc\index.html" -Encoding utf8
-        "<html><head><title>Test 22</title></head><body><h1>Test</h1></body></html>" | Out-File "$($deploymentDirectory)\doc\general.html" -Encoding utf8
+        ipmo .\devops\docHelper.psm1 -force
+        set-wupDoc -htmlOutputPath "$($deploymentDirectory)\doc"
         $c=Get-Content -Path ".\doc\staticwebapp.config.source" -Encoding UTF8 -Raw
         $c=$c.Replace("###tenantid###",$variableDefinition.variables.tenant_id.value)
         $c | out-file "$($deploymentDirectory)\doc\staticwebapp.config.json" -Encoding utf8       

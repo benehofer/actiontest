@@ -1,4 +1,15 @@
-# Input bindings are passed in via param block.
+<#
+<DOC>
+Data is transferred from the WIDup interface to the connected Service Now system via 
+the service now queue worker. As the main logic for the exchange of data in this case 
+lies largely in Service Now, the snow worker is quite simple.<br/>The data is loaded 
+from the queue and the blob storage, converted into the target structure (destinationData) 
+and finally transferred to the target system. The destinationData record is also added 
+to the current syncjob data record.<br/>At the end, the snow queue worker transfers 
+the data to the next queue and finally deletes the original blob once all tasks have 
+been successfully completed <section:queue worker processing>.
+</DOC>
+#>
 param([object]$QueueItem, $TriggerMetadata)
 try {
     Import-Module widtools -WarningAction SilentlyContinue

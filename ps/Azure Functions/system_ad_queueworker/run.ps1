@@ -1,4 +1,17 @@
-# Input bindings are passed in via param block.
+<#
+<DOC>
+The queue worker for the Active Directory Domain Services System creates and modifies 
+user accounts and groups in the local (legacy) Active Directory system.<br/>The worker 
+receives the QueueItem via the queue trigger, which contains the reference to the blob 
+in which the current syncjob object with the source data is stored.<br/>The worker first 
+loads this data and converts it into the target structure (destinationData); The syncjob 
+dataset is extended with the destinationData dataset<br/>The worker then establishes 
+a remote session to a local target server in the Active Directory via the hybrid connection. 
+Within this session, the worker executes Powershell commands remotely on the ADDS server, 
+to manage the user accounts, groups and memberships.<br/>Finally, the worker inserts the 
+new data record into the next queue (dvQueue) and deletes the original blob <section:queue worker processing>. 
+</DOC>
+#>
 param([object]$QueueItem, $TriggerMetadata)
 try {
     Import-Module widtools -WarningAction SilentlyContinue

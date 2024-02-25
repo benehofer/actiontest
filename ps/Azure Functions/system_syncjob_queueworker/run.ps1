@@ -1,4 +1,24 @@
-# Input bindings are passed in via param block.
+<#
+<DOC>
+In contrast to the other queue workers, the syncjob queue worker is not responsible for 
+transferring data to one of the peripheral systems connected to WIDup, but is used to 
+process the jobs in the WIDup interface. The synjob queue worker has two modes, a start 
+and an end mode.<br/>All schedule-based jobs of the interface start their cycle via the 
+queues in the syncjob queue and are processed first by the associated worker <section:widup queues>. 
+In start mode, the synjob queue worker loads the data from the source system and adds the 
+sourceData data set to the syncjob data set before forwarding the data set to the target 
+queue.<br/>All jobs, both schedule-based and trigger-based jobs, end their cycle via the 
+queues in the syncjob queue. The worker recognises that it is a job that has completed its 
+cycle; as a criterion, it checks whether the syncjob data record (already) contains a _started 
+attribute. If this is the case, the current job is completed. To do this, the execution of 
+the job is first noted in the syncjobs table. it is then checked whether a "next job" is 
+defined for the current job in the configuration; if this is the case, this next job is 
+started by inserting a corresponding syncjob data record into the job queue. If not, or if 
+the current job was started in single mode (_runSingle), no next job is started.<br/>
+Finally - if everything was successful up to that point - the current blob is deleted in both 
+start and end mode <section:queue worker processing>.
+</DOC>
+#>
 param([object]$QueueItem, $TriggerMetadata)
 try {
     Import-Module widtools -WarningAction SilentlyContinue

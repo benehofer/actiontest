@@ -1,4 +1,17 @@
-# Input bindings are passed in via param block.
+<#
+<DOC>
+The dataverse queue worker is responsible for transferring the data to the Microsoft 
+Dataverse database. All data that passes through the WIDup interface is also stored 
+in the Dataverse system. This enables the data to be widely utilised, e.g. with Microsoft 
+PowerBI or the Microsoft Power Platform.<br/>As with all queue workers, the syncjob 
+data record is first loaded from the queue and the blob storage. The target structure 
+(destinationData) is then calculated from the source data (sourceData) in the syncjob 
+data set; the destinationData data set is in turn added to the syncJob data set and 
+subsequently sent to the APIs of the Dataverse system.<br/>The completion of the worker 
+is again the same as always: the syncjob data set is passed on to the next queue 
+(jobqueue) and the original blob is deleted if the worker has been successfully executed <section:queue worker processing>.
+</DOC>
+#>
 param([object]$QueueItem, $TriggerMetadata)
 try {
     Import-Module widtools -WarningAction SilentlyContinue

@@ -194,6 +194,12 @@ function Initialize-WIDUp() {
         $global:bcurldepartments=''
     }
 
+    if ($null -ne $env:bc_url_ticket) {
+        $global:bcurlticket=$env:bc_url_ticket
+    } else {
+        $global:bcurlticket=''
+    }
+
     if ($null -ne $env:snow_token_kvsecretname) {
         $global:snowtokenkvsecretname=$env:snow_token_kvsecretname
     } else {
@@ -294,6 +300,12 @@ function Initialize-WIDUp() {
         $global:dvurljournal=$env:dv_url_journal
     } else {
         $global:dvurljournal=''
+    }
+
+    if ($null -ne $env:dv_url_ticket) {
+        $global:dvurlticket=$env:dv_url_ticket
+    } else {
+        $global:dvurlticket=''
     }
 
     if ($null -ne $env:dv_url_employee) {
@@ -1251,6 +1263,58 @@ function Set-wupBCJournalData() {
     }
     $r
 }
+function Set-wupBCTicketRecord() {
+    param(
+        $bcHeader,
+        $record,
+        $existingRecord=$null,
+        $primaryKeyName="systemid"
+    )
+    try {
+        $uri=$global:bcurlticket
+        if ($null -eq $existingRecord) {
+            $header=$bcHeader | Merge-HeaderAttributes -additionalHeaderAttributes $([hashtable]@{})
+            $method="POST"
+            $messageSuccess="Successfully added bc ticket record"
+            $messageError="Error adding bc ticket record"
+        } else {
+            $uri="$($uri)($($existingRecord.$($primaryKeyName)))"
+            $header=$bcHeader | Merge-HeaderAttributes -additionalHeaderAttributes $([hashtable]@{
+                "if-match"=$($existingRecord.'@odata.etag')
+            })
+            $method="PATCH"
+            $messageSuccess="Successfully set bc ticket record [$($primaryKeyName): $($existingRecord.$($primaryKeyName))]"
+            $messageError="Error setting bc ticket record [$($primaryKeyName): $($existingRecord.$($primaryKeyName))]"
+        }
+        $recordJson=$record | ConvertTo-Json
+        $response=Invoke-WebRequest -Uri $uri -Body $recordJson -Method $method -Headers $header -ContentType "application/json; charset=utf-8" -UseBasicParsing
+        #$response=invoke-widWebRequest -Uri $uri -Body $recordJson -Method $method -Headers $header -ContentType "application/json; charset=utf-8" -UseBasicParsing
+        $r=New-Result -success $true -message $messageSuccess -value $response -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message $messageError -exception $_.exception -logLevel Error
+    }
+    $r
+}
+function Set-wupBCTicketData() {
+    param(
+        $record,
+        $bcHeader
+    )
+    $r=Get-wupBCData -bcHeader $bcHeader -url $global:bcurlticket -filter "(ticketno eq '$($record.ticketno)')"
+    if ($r.Success) {
+        $bcTicketData=$r.Value
+        if ($null -eq $bcTicketData) {
+            #insert new record into ticket
+            New-Result -success $true -message "Adding new record to tickets [$($record.ticketno)]" -logLevel Information | Write-Result -NoPassThru
+            $r=Set-wupBCTicketRecord -bcHeader $bcHeader -record $record
+        } else {
+            #patch existing ticket record
+            New-Result -success $true -message "Existing record found in tickets [$($record.ticketno)]; patching" -logLevel Information | Write-Result -NoPassThru
+            $r=Set-wupBCTicketRecord -bcHeader $bcHeader -record $record -existingRecord $bcTicketData[0]
+        }
+    }
+    $r
+}
 function Set-wupSyncJob() {
     param(
         $syncJob,
@@ -1666,6 +1730,14 @@ function Compare-wupDataDVSNOW() {
     $r
 }
 function Get-wupStatRun() {
+<#
+This function loads a 'statisticRun' record from the 
+Dataverse database and adds parameters for the execution 
+of the statistics function. The result of this function is 
+passed to the Invoke-wupStatistic function. As parameter, 
+the type of statistic for which a data set is to be generated 
+must be specified.
+#>
     param(
         [ValidateSet(
             "timeCardErrors",
@@ -2184,7 +2256,7 @@ function Get-wupMonJobStatus() {
         $r=Get-wupApiSchema -doNotSetGlobalVariable | Write-Result
         if ($r.Success) {
             $apiSchema=$r.value
-            $apischema.syncJobs | ? {$_.frequencydeltasync.length -gt 0 -or $_.frequencyfullsync.length -gt 0} | %{
+            $apischema.syncJobs | ? {($_.frequencydeltasync -gt 0 -or $_.frequencyfullsync -gt 0)} | %{
                 $job=$_
                 while ($job.nextJob.length -gt 0) {
                     $nextjob=$apischema.syncJobs | ? {$_.rowKey -eq $job.nextJob}
