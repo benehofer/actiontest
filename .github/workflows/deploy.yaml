@@ -39,7 +39,16 @@ jobs:
       doenv: 'integration-plan'
       artifacttype: 'doc'
     secrets: inherit
-    
+
+  build-tst:
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true'  }}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'integration-plan'
+      artifacttype: 'tst'
+    secrets: inherit
+  
   plan-integration-iac:
     needs: build-iac
     permissions:

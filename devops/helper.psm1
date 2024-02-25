@@ -276,6 +276,29 @@ function Set-dplDirectoryDoc() {
     }
     $r
 }
+function Set-dplDirectoryTst() {
+    param(
+        $variableDefinition,
+        $deploymentDirectory
+    )
+    try {
+        Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
+
+        $s='Write-Host -message "No plan mode for tst deployment"'
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
+
+        $s="Write-Host 'Preparing test deployment'" + "`r`n"
+        $s+='$fk=$(az keyvault secret show --name "functionkeymonitor" --vault-name "' + $($variableDefinition.variables.keyvault_name.value) + '") | convertfrom-json | select -ExpandProperty value'+"`r`n"
+        $s+='$hdr=@{"Content-Type"="application/json";"x-functions-key"=$fk}'+"`r`n"
+        $s+='$rsp=Invoke-RestMethod -Uri "' + $($variableDefinition.variables.api_base_url.value) + 'api/monitor/status" -Headers $hdr -Method get'+"`r`n"
+        $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
+
+        $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message "Error creating doc deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
+    }
+    $r
+}
 
 function Get-dplHttpAuthHeader() {
     param(
