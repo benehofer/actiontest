@@ -5,6 +5,9 @@ $dpDir=$env:dpDir
 ipmo .\devops\helper.psm1 -force
 $InformationPreference="Continue"
 
+Write-Host $(git diff --name-only)
+Write-Host "end"
+
 $r=Get-dplVariableDefinition -targetEnvironmentName $appEnv | Write-dplResult
 if ($r.Success) {
     $variableDefinition=$r.Value

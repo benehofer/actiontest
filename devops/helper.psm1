@@ -293,8 +293,6 @@ function Set-dplDirectoryTst() {
         $s+='$rsp=Invoke-RestMethod -Uri "' + $($variableDefinition.variables.api_base_url.value) + 'api/monitor/status" -Headers $hdr -Method get'+"`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
-        git diff --name-only
-        
         $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
     } catch {
         $r=New-Result -success $false -message "Error creating doc deployment artifacts in ($($deploymentDirectory))" -exception $_.Exception -logLevel Error            
