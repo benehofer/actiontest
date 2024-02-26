@@ -308,7 +308,7 @@ function Set-dplDirectoryDat() {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
 
         $s="Write-Host 'Running data deployment in plan mode'" + "`r`n"
-        $s+='Install-Module -Name ImportExcel' + "`r`n"
+        $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
         $s+='ipmo .\devops\helper.psm1' + "`r`n"
         $s+='' + "`r`n"
@@ -317,7 +317,7 @@ function Set-dplDirectoryDat() {
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s="Write-Host 'Running data deployment in apply mode'" + "`r`n"
-        $s+='Install-Module -Name ImportExcel' + "`r`n"
+        $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
         $s+='ipmo .\devops\helper.psm1' + "`r`n"
         $s+='' + "`r`n"
