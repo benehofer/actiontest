@@ -8,6 +8,7 @@ on:
     paths:
       - 'iac/**'
       - 'ps/**'
+      - 'dat/**'
 
 jobs:
   detect-change:
@@ -30,10 +31,19 @@ jobs:
       doenv: 'integration-plan'
       artifacttype: 'ps'
     secrets: inherit      
+    
+  build-dat:
+    needs: detect-change
+    if: ${{ needs.detect-change.outputs.dat == 'true'}}
+    uses: ./.github/workflows/template-build.yaml
+    with:
+      doenv: 'integration-plan'
+      artifacttype: 'dat'
+    secrets: inherit      
 
   build-doc:
     needs: detect-change
-    if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true'  }}
+    if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true' || needs.detect-change.outputs.dat == 'true'  }}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: 'integration-plan'
@@ -42,7 +52,7 @@ jobs:
 
   build-tst:
     needs: detect-change
-    if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true'  }}
+    if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true' || needs.detect-change.outputs.dat == 'true'  }}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: 'integration-plan'
@@ -72,9 +82,34 @@ jobs:
       workflowtype: iac
       mode: apply
     secrets: inherit      
+
+  plan-integration-dat:
+    needs: [build-dat, plan-integration-iac, apply-integration-iac]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-dat.result,'success')  }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'integration-plan'
+      workflowtype: dat
+      mode: plan
+    secrets: inherit
+    
+  apply-integration-dat:
+    needs: [build-dat,plan-integration-dat]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    uses: ./.github/workflows/template-deploy.yaml
+    with:
+      doenv: 'integration'
+      workflowtype: dat
+      mode: apply
+    secrets: inherit
   
   apply-integration-ps:
-    needs: [build-ps, plan-integration-iac, apply-integration-iac]
+    needs: [build-ps, plan-integration-iac, apply-integration-iac, plan-integration-dat, apply-integration-dat]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
     permissions:
       contents: 'read'
@@ -87,7 +122,7 @@ jobs:
     secrets: inherit      
   
   apply-integration-doc:
-    needs: [build-doc, plan-integration-iac, apply-integration-iac, apply-integration-ps]
+    needs: [build-doc, plan-integration-iac, apply-integration-iac, plan-integration-dat, apply-integration-dat, apply-integration-ps]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-doc.result,'success')  }}
     permissions:
       contents: 'read'
@@ -97,4 +132,4 @@ jobs:
       doenv: 'Integration'
       workflowtype: doc
       mode: apply
-    secrets: inherit   
+    secrets: inherit

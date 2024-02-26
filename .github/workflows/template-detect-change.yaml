@@ -14,6 +14,7 @@ jobs:
     outputs:
       iac: ${{ steps.filter.outputs.iac }}
       ps: ${{ steps.filter.outputs.ps }}
+      dat: ${{ steps.filter.outputs.dat }}
     steps:
     - uses: actions/checkout@v4
     - uses: dorny/paths-filter@v3
@@ -24,4 +25,6 @@ jobs:
             - 'iac/**'
           ps:
             - 'ps/**'
+          dat:
+            - 'dat/**'
         base: ${{ github.ref }}
