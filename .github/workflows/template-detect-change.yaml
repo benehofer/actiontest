@@ -7,6 +7,8 @@ on:
         value: ${{  jobs.paths-filter.outputs.iac  }}
       ps:
         value: ${{  jobs.paths-filter.outputs.ps  }}
+      dat:
+        value: ${{  jobs.paths-filter.outputs.dat  }}
 
 jobs:
   paths-filter:
