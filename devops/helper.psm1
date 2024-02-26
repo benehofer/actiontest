@@ -299,7 +299,6 @@ function Set-dplDirectoryTst() {
     }
     $r
 }
-
 function Get-dplHttpAuthHeader() {
     param(
         $resourceURI,
@@ -339,4 +338,72 @@ function Get-dplFunctionAppSettings() {
     $(az functionapp config appsettings list --name $funcName --resource-group $rgname) | convertfrom-json | %{
 
     }
+}
+function Update-dplTableData() {
+    param(
+        $tName,
+        $mode
+    )
+    #Install-Module -Name ImportExcel
+    try {
+        ipmo ImportExcel
+        $pe=$(az storage account show --resource-group $variableDefinition.variables.resource_group_name.value --name $variableDefinition.variables.storage_account_name.value -o tsv --query 'primaryEndpoints.table')
+        $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09"} | select -ExpandProperty value
+        $trs=@();$ers=@()
+        $trs+=Invoke-RestMethod -Uri "$($pe)$($tName)" -Headers $hdr -Method get | select -ExpandProperty value
+        $ers+=Import-Excel -path ".\dat\wupData.xlsx" -WorksheetName $tName | ? {$_.rowkey -ne $null}
+        $ers | % {$er=$_;$er | get-member -MemberType NoteProperty | select -expandproperty name | %{if ($null -eq $er.$($_)) {$er.$($_)=""}}}
+        $ers | ? {$null -ne $_} | %{
+            $er=$_
+            $tr=$trs | ? {$_.rowkey -eq $er.rowkey}
+            if ($null -eq $tr) {
+                $action="add"
+            } else {
+                $same=$true
+                $er | get-member -MemberType NoteProperty | ? {$_.name -notlike "*at" -and $_.name -ne "action"} | select -ExpandProperty name | %{
+                    $att=$_
+                    $same=$same -and ($er.$($_) -eq $tr.$($_))
+                }
+                if ($same) {$action="same"} else {$action="update"}
+            }
+            $er | Add-Member -MemberType NoteProperty -Name "action" -Value $action -Force
+        }
+        $trs | ? {$null -ne $_} | %{
+            $tr=$_
+            $er=$ers | ? {$_.rowkey -eq $tr.rowkey}
+            if ($null -eq $er) {
+                $tr | Add-Member -MemberType NoteProperty -Name "action" -Value "remove" -Force
+                $ers+=$tr
+            }
+        }
+        if ($mode -eq "apply") {
+            $ers | ? {$_.action -in @('add','update')} | %{
+                #upsert
+                $er=$_
+                Write-Host "Upsert record $($er.rowkey)"
+                $b=[PSCustomObject]@{}            
+                $er.psobject.Properties | ? {$_.name -notlike "action"} | %{$b | Add-Member -MemberType NoteProperty -Name $_.name -Value $_.value}
+                $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'))} | select -ExpandProperty value
+                $response=Invoke-RestMethod -Uri "$($pe)$($tName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method put -body $($b | convertto-json) -UseBasicParsing
+            }
+            $ers | ? {$_.action -in @('remove')} | %{
+                #remove
+                $er=$_
+                Write-Host "Remove record $($er.rowkey)"
+                $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'));"If-Match"="*"} | select -ExpandProperty value
+                $response=Invoke-RestMethod -Uri "$($pe)$($tName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method delete -ContentType application/http -UseBasicParsing
+            }
+        }
+        $result=[PSCustomObject]@{
+            same=$(,@($ers | ? {$_.action -eq 'same'})).count
+            add=$(,@($ers | ? {$_.action -eq 'add'})).count
+            update=$(,@($ers | ? {$_.action -eq 'update'})).count
+            remove=$(,@($ers | ? {$_.action -eq 'remove'})).count
+            details=$ers | sort action | convertto-json
+        }
+        $r=New-Result -success $true -message "Successfully updated table $($tName) in $($mode) mode" -value $result -logLevel Information
+    } catch {
+        $r=New-Result -success $false -message "Error updaing table $($tName) in $($mode) mode" -exception $_.Exception -logLevel Error            
+    }
+    $r
 }
