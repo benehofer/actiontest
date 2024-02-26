@@ -97,7 +97,8 @@ jobs:
     secrets: inherit
     
   apply-integration-dat:
-    needs: [build-dat,plan-integration-dat]
+    needs: [build-dat, plan-integration-iac, apply-integration-iac, plan-integration-dat]
+    if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.plan-integration-dat.result,'success')  }}
     permissions:
       contents: 'read'
       id-token: 'write'
