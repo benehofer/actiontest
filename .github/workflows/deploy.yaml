@@ -10,11 +10,15 @@ on:
       - 'ps/**'
       - 'dat/**'
 
+env:
+  doEnv: ${{ github.ref == 'refs/heads/main' && 'Production' || 'integration' }}
+
 jobs:
   detect-change:
     uses: ./.github/workflows/template-detect-change.yaml
 
   build-iac:
+    name: $doEnv
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
@@ -60,6 +64,7 @@ jobs:
     secrets: inherit
   
   plan-integration-iac:
+    name: plan-$doEnv-iac
     needs: build-iac
     permissions:
       contents: 'read'
