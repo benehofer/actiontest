@@ -388,8 +388,10 @@ function Update-dplTableData() {
         $trs=@();$ers=@()
         Write-Host "Retrieving table data from Azure storage"
         $trs+=Invoke-RestMethod -Uri "$($pe)$($tableName)" -Headers $hdr -Method get | select -ExpandProperty value
+        Write-Host "--> found $($trs.length) records"
         Write-Host "--> Retrieving table data from excel"
         $ers+=Import-Excel -path ".\wupData.xlsx" -WorksheetName $tableName | ? {$_.rowkey -ne $null}
+        Write-Host "--> found $($ers.length) records"
         $ers | % {$er=$_;$er | get-member -MemberType NoteProperty | select -expandproperty name | %{if ($null -eq $er.$($_)) {$er.$($_)=""}}}
         Write-Host "--> comparing"
         $ers | ? {$null -ne $_} | %{
