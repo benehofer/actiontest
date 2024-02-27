@@ -312,8 +312,8 @@ function Set-dplDirectoryDat() {
         $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
         $s+='ipmo .\devops\helper.psm1' + "`r`n"
-        $s+='Update-dplTableData -tableName "syncjob" -mode "plan"' + "`r`n"
-        $s+='' + "`r`n"
+        $s+='$pe=$(az storage account show --resource-group "' + $variableDefinition.variables.resource_group_name.value + '" --name "' + $variableDefinition.variables.storage_account_name.value + '" -o tsv --query "primaryEndpoints.table")' + "`r`n"
+        $s+='Update-dplTableData -tableName "syncjob" -mode "plan" -pe $pe' + "`r`n"
         $s+='' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
@@ -321,7 +321,8 @@ function Set-dplDirectoryDat() {
         $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
         $s+='ipmo .\devops\helper.psm1' + "`r`n"
-        $s+='Update-dplTableData -tableName "syncjob" -mode "apply"' + "`r`n"
+        $s+='$pe=$(az storage account show --resource-group "' + $variableDefinition.variables.resource_group_name.value + '" --name "' + $variableDefinition.variables.storage_account_name.value + '" -o tsv --query "primaryEndpoints.table")' + "`r`n"
+        $s+='Update-dplTableData -tableName "syncjob" -mode "apply" -pe $pe' + "`r`n"
         $s+='' + "`r`n"
         $s+='' + "`r`n"
         $s+='' + "`r`n"
@@ -379,11 +380,11 @@ function _Get-dplFunctionAppSettings() {
 function Update-dplTableData() {
     param(
         $tableName,
-        $mode
+        $mode,
+        $pe
     )
     try {
         Write-Host "Investigating data table $($tableName)"
-        $pe=$(az storage account show --resource-group $variableDefinition.variables.resource_group_name.value --name $variableDefinition.variables.storage_account_name.value -o tsv --query 'primaryEndpoints.table')
         Write-Host "--> Retrieving authentication header"
         $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09"} | select -ExpandProperty value
         $trs=@();$ers=@()
