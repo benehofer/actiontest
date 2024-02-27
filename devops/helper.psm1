@@ -306,6 +306,7 @@ function Set-dplDirectoryDat() {
     )
     try {
         Set-dplDeploymentDirectory -deploymentDirectory $deploymentDirectory
+        Copy-Item -Path ".\dat\*" -Destination $($deploymentDirectory) -Recurse
 
         $s="Write-Host 'Running data deployment in plan mode'" + "`r`n"
         $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
@@ -356,7 +357,7 @@ function Get-dplHttpAuthHeader() {
     }
     $r
 }
-function Get-dplFunctionAppSettings() {
+function _Get-dplFunctionAppSettings() {
     param(
         $variableDefinition,
         $deploymentDirectory
@@ -380,12 +381,17 @@ function Update-dplTableData() {
         $mode
     )
     try {
+        Write-Host "Investigating data table $($tableName)"
         $pe=$(az storage account show --resource-group $variableDefinition.variables.resource_group_name.value --name $variableDefinition.variables.storage_account_name.value -o tsv --query 'primaryEndpoints.table')
+        Write-Host "--> Retrieving authentication header"
         $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09"} | select -ExpandProperty value
         $trs=@();$ers=@()
+        Write-Host "Retrieving table data from Azure storage"
         $trs+=Invoke-RestMethod -Uri "$($pe)$($tableName)" -Headers $hdr -Method get | select -ExpandProperty value
-        $ers+=Import-Excel -path ".\dat\wupData.xlsx" -WorksheetName $tableName | ? {$_.rowkey -ne $null}
+        Write-Host "--> Retrieving table data from excel"
+        $ers+=Import-Excel -path ".\wupData.xlsx" -WorksheetName $tableName | ? {$_.rowkey -ne $null}
         $ers | % {$er=$_;$er | get-member -MemberType NoteProperty | select -expandproperty name | %{if ($null -eq $er.$($_)) {$er.$($_)=""}}}
+        Write-Host "--> comparing"
         $ers | ? {$null -ne $_} | %{
             $er=$_
             $tr=$trs | ? {$_.rowkey -eq $er.rowkey}
@@ -409,33 +415,40 @@ function Update-dplTableData() {
                 $ers+=$tr
             }
         }
-
-        Write-Host "$([PSCustomObject]@{
+        Write-Host "--> Result"
+        $result=[PSCustomObject]@{
             details=$ers | sort action | convertto-json
             same=$(,@($ers | ? {$_.action -eq 'same'})).count
             add=$(,@($ers | ? {$_.action -eq 'add'})).count
             update=$(,@($ers | ? {$_.action -eq 'update'})).count
             remove=$(,@($ers | ? {$_.action -eq 'remove'})).count
-        } | convertto-json)"
+        }
+        Write-Host "$($result | convertto-json)"
 
         if ($mode -eq "apply") {
-            $ers | ? {$_.action -in @('add','update')} | %{
-                #upsert
-                $er=$_
-                Write-Host "Upsert record $($er.rowkey)"
-                $b=[PSCustomObject]@{}            
-                $er.psobject.Properties | ? {$_.name -notlike "action"} | %{$b | Add-Member -MemberType NoteProperty -Name $_.name -Value $_.value}
-                $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'))} | select -ExpandProperty value
-                $response=Invoke-RestMethod -Uri "$($pe)$($tableName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method put -body $($b | convertto-json) -UseBasicParsing
-            }
-            $ers | ? {$_.action -in @('remove')} | %{
-                #remove
-                $er=$_
-                Write-Host "Remove record $($er.rowkey)"
-                $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'));"If-Match"="*"} | select -ExpandProperty value
-                $response=Invoke-RestMethod -Uri "$($pe)$($tableName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method delete -ContentType application/http -UseBasicParsing
+            if ($result.add -gt 0 -or $result.update -gt 0 -or $result.remove -gt 0) {
+                Write-Host "--> Running in apply mode, so applying changes..."
+                $ers | ? {$_.action -in @('add','update')} | %{
+                    #upsert
+                    $er=$_
+                    Write-Host "  --> Upsert record $($er.rowkey)"
+                    $b=[PSCustomObject]@{}            
+                    $er.psobject.Properties | ? {$_.name -notlike "action"} | %{$b | Add-Member -MemberType NoteProperty -Name $_.name -Value $_.value}
+                    $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'))} | select -ExpandProperty value
+                    $response=Invoke-RestMethod -Uri "$($pe)$($tableName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method put -body $($b | convertto-json) -UseBasicParsing
+                }
+                $ers | ? {$_.action -in @('remove')} | %{
+                    #remove
+                    $er=$_
+                    Write-Host "  --> Remove record $($er.rowkey)"
+                    $hdr=Get-dplHttpAuthHeader -resourceURI $pe -additionalHeaderAttributes @{"Accept" = "application/json;odata=nometadata";"x-ms-version"="2017-11-09";"x-ms-date"=$((Get-Date).ToUniversalTime().toString('R'));"If-Match"="*"} | select -ExpandProperty value
+                    $response=Invoke-RestMethod -Uri "$($pe)$($tableName)(PartitionKey='$($er.PartitionKey)',RowKey='$($er.RowKey)')" -Headers $hdr -Method delete -ContentType application/http -UseBasicParsing
+                }
+            } else {
+                Write-Host "--> Running in apply mode but no changes detected"
             }
         }
+        Write-Host "Finished investigating data table $($tableName)"
     } catch {
         Write-Host "Error updating table $($tableName) in $($mode) mode"
         Write-Host $_.Exception

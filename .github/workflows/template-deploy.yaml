@@ -26,7 +26,6 @@ jobs:
         with:
           sparse-checkout: |
             devops
-            dat
       - uses: actions/download-artifact@v4
         with:
           name: ${{  inputs.workflowtype  }}-build
