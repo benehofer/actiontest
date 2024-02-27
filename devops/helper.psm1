@@ -456,5 +456,6 @@ function Update-dplTableData() {
     } catch {
         Write-Host "Error updating table $($tableName) in $($mode) mode"
         Write-Host $_.Exception
+        throw "Error"
     }
 }
