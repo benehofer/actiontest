@@ -311,24 +311,19 @@ function Set-dplDirectoryDat() {
         $s="Write-Host 'Running data deployment in plan mode'" + "`r`n"
         $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
-        $s+='ipmo .\devops\helper.psm1' + "`r`n"
+        $s+='ipmo .\devops\helper.psm1 -Force -WarningAction SilentlyContinue' + "`r`n"
         $s+='$pe=$(az storage account show --resource-group "' + $variableDefinition.variables.resource_group_name.value + '" --name "' + $variableDefinition.variables.storage_account_name.value + '" -o tsv --query "primaryEndpoints.table")' + "`r`n"
         $s+='Update-dplTableData -tableName "syncjob" -mode "plan" -pe $pe' + "`r`n"
-        $s+='' + "`r`n"
+        $s+='Update-dplTableData -tableName "apischema" -mode "plan" -pe $pe' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\plan.ps1"
 
         $s="Write-Host 'Running data deployment in apply mode'" + "`r`n"
         $s+='Install-Module -Name ImportExcel -Confirm:$False -Force' + "`r`n"
         $s+='ipmo ImportExcel' + "`r`n"
-        $s+='ipmo .\devops\helper.psm1' + "`r`n"
+        $s+='ipmo .\devops\helper.psm1 -Force -WarningAction SilentlyContinue' + "`r`n"
         $s+='$pe=$(az storage account show --resource-group "' + $variableDefinition.variables.resource_group_name.value + '" --name "' + $variableDefinition.variables.storage_account_name.value + '" -o tsv --query "primaryEndpoints.table")' + "`r`n"
         $s+='Update-dplTableData -tableName "syncjob" -mode "apply" -pe $pe' + "`r`n"
-        $s+='' + "`r`n"
-        $s+='' + "`r`n"
-        $s+='' + "`r`n"
-        $s+='' + "`r`n"
-        $s+='' + "`r`n"
-        $s+='' + "`r`n"
+        $s+='Update-dplTableData -tableName "apischema" -mode "apply" -pe $pe' + "`r`n"
         $s | out-file -Encoding utf8 -FilePath "$($deploymentDirectory)\apply.ps1"
 
         $r=New-Result -success $true -message "Successfully created doc deployment artifacts in ($($deploymentDirectory))" -value $null -logLevel Information
@@ -427,7 +422,7 @@ function Update-dplTableData() {
             update=$(,@($ers | ? {$_.action -eq 'update'})).count
             remove=$(,@($ers | ? {$_.action -eq 'remove'})).count
         }
-        Write-Host "$($result | convertto-json)"
+        Write-Host $($result | out-string) #"$($result | convertto-json)"
 
         if ($mode -eq "apply") {
             if ($result.add -gt 0 -or $result.update -gt 0 -or $result.remove -gt 0) {

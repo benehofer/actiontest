@@ -800,7 +800,7 @@ function Set-wupDok() {
     $doc.addText("The render function compiles a set of variables for a specified application environment. To do this, the function loads the variable definition file 
     and calculates the values for the target application environment through repeated string substitution. At the same time, a string variable is created that 
     contains the bicep code for the variable definition in main.bicep.<br/>The name of the target application environment must be specified as a parameter.")
-    $doc.addCode($(getfunction "get-bicepvariabledefinition" | select -expandproperty code))
+    $doc.addCode($(getfunction "Get-dplVariableDefinition" | select -expandproperty code))
     $doc.addSection("Variable usage")
     $doc.addText("The variables are used in three places.<br/>
     <ul>

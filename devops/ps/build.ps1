@@ -2,7 +2,7 @@ $appEnv=$env:appEnv
 $doEnv=$env:doEnv
 $dpDir=$env:dpDir
 
-ipmo .\devops\helper.psm1 -force
+ipmo .\devops\helper.psm1 -force -WarningAction SilentlyContinue
 $InformationPreference="Continue"
 
 $r=Get-dplVariableDefinition -targetEnvironmentName $appEnv | Write-dplResult
