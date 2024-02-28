@@ -1,4 +1,4 @@
-name: 'integration'
+name: 'deploy'
 
 on:
   push:
@@ -18,12 +18,11 @@ jobs:
     uses: ./.github/workflows/template-detect-change.yaml
 
   build-iac:
-    name: ${{ env.DOENV  }}
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
-      doenv: 'integration-plan'
+      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'iac'
     secrets: inherit
 
@@ -41,7 +40,7 @@ jobs:
     if: ${{ needs.detect-change.outputs.dat == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
-      doenv: 'integration-plan'
+      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'dat'
     secrets: inherit      
 
