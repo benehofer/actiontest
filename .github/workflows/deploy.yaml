@@ -10,65 +10,51 @@ on:
       - 'ps/**'
       - 'dat/**'
 
-env:
-  doEnv: ${{ github.ref == 'refs/heads/main' && 'Production' || 'integration' }}
-
 jobs:
   detect-change:
     uses: ./.github/workflows/template-detect-change.yaml
 
   build-iac:
-    name: "build-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-iac"
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'iac'
-    secrets: inherit
 
   build-ps:
-    name: "build-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-ps"    
     needs: detect-change
     if: ${{ needs.detect-change.outputs.ps == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'ps'
-    secrets: inherit      
     
   build-dat:
-    name: "build-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-dat"    
     needs: detect-change
     if: ${{ needs.detect-change.outputs.dat == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'dat'
-    secrets: inherit      
 
   build-doc:
-    name: "build-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-doc"    
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true' || needs.detect-change.outputs.dat == 'true'  }}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'doc'
-    secrets: inherit
 
   build-tst:
-    name: "build-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-tst"    
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true' || needs.detect-change.outputs.ps == 'true' || needs.detect-change.outputs.dat == 'true'  }}
     uses: ./.github/workflows/template-build.yaml
     with:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'tst'
-    secrets: inherit
   
   plan-iac:
-    name: "plan-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-iac"    
     needs: build-iac
     permissions:
       contents: 'read'
@@ -81,7 +67,6 @@ jobs:
     secrets: inherit      
 
   apply-iac:
-    name: "apply-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-iac"    
     needs: [build-iac,plan-iac]
     permissions:
       contents: 'read'
@@ -94,7 +79,6 @@ jobs:
     secrets: inherit      
 
   plan-dat:
-    name: "plan-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-dat"
     needs: [build-dat, plan-iac, apply-iac]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-dat.result,'success')  }}
     permissions:
@@ -108,7 +92,6 @@ jobs:
     secrets: inherit
     
   apply-dat:
-    name: "apply-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-dat"
     needs: [build-dat, plan-iac, apply-iac, plan-dat]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.plan-dat.result,'success')  }}
     permissions:
@@ -122,7 +105,6 @@ jobs:
     secrets: inherit
   
   apply-ps:
-    name: "apply-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-ps"
     needs: [build-ps, plan-iac, apply-iac, plan-dat, apply-dat]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-ps.result,'success')  }}
     permissions:
@@ -136,7 +118,6 @@ jobs:
     secrets: inherit      
   
   apply-doc:
-    name: "apply-${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-doc"
     needs: [build-doc, plan-iac, apply-iac, plan-dat, apply-dat, apply-ps]
     if: ${{  always() && !cancelled() && !contains(needs.*.result, 'failure') && contains(needs.build-doc.result,'success')  }}
     permissions:
@@ -144,7 +125,7 @@ jobs:
       id-token: 'write'
     uses: ./.github/workflows/template-deployswa.yaml
     with:
-      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}"
+      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       workflowtype: doc
       mode: apply
     secrets: inherit
