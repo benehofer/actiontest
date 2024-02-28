@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/template-detect-change.yaml
 
   build-iac:
-    name: $doEnv
+    name: ${{ env.DOENV  }}
     needs: detect-change
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
@@ -64,7 +64,6 @@ jobs:
     secrets: inherit
   
   plan-integration-iac:
-    name: plan-$doEnv-iac
     needs: build-iac
     permissions:
       contents: 'read'
