@@ -829,8 +829,10 @@ function Set-wupDok() {
     structure of this artefact type forms the web root of the Function App below the "Azure Function" folder; this is specified by the 
     PaaS service (
     <a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-powershell" target="_blank">
-    further information on Azure Function development</a>).</br/>The "iac" artefact type contains the code for the IaC (infrastructure as code) rollout of the PaaS elements. WIDup uses <a href='https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep" target="_blank">bicep</a> 
-    as the declarative language for the cloud infrastructure.<br/> ')
+    further information on Azure Function development</a>).</br/>The "iac" artefact type contains the code for the IaC (infrastructure as code) 
+    rollout of the PaaS elements. WIDup uses <a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep" target="_blank">bicep</a> 
+    as the declarative language for the cloud infrastructure.<br/>')
+    
 
     if (!(Test-path $global:htmlOutputPath)) {new-item -Path $global:htmlOutputPath -ItemType Directory}
     $doc.save()
