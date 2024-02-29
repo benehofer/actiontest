@@ -1,6 +1,3 @@
-
-
-
 function New-Result() {
     param(
         [parameter(Mandatory=$true)][bool]$success,

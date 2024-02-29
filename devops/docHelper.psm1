@@ -817,6 +817,21 @@ function Set-wupDok() {
     $doc.addSection("Overview of variables")
     $doc.addTable($(getvariables))
     
+    $doc.addPage("repository","WIDup repository","The code artefacts of WIDup are managed in a Github repository.","fa-square-check")
+    $doc.addArticle("Repository structure","The structure of the repository is optimised for automatic processing in pipelines. The 
+    division into different folders for the different artefact types (iac, ps, dat, doc) makes it possible to optimise the pipeline 
+    and only perform those steps where the source code has changed.<br/>The code for the pipelines is an integral part of the repository 
+    (folders devops, .github).<br/>The structure of the repository is mandatory, the code of the pipelines hard-codes references 
+    this structure.")
+    $doc.addSection("Artefact types")
+    $doc.addText('The source code of WIDup is divided into different artefact types. Together, these form the different functions and 
+    structures of the interface.<br/><br/>The "ps" artefact type contains the Powershell code for the Azure Function App. The subfolder 
+    structure of this artefact type forms the web root of the Function App below the "Azure Function" folder; this is specified by the 
+    PaaS service (
+    <a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-powershell" target="_blank">
+    further information on Azure Function development</a>).</br/>The "iac" artefact type contains the code for the IaC (infrastructure as code) rollout of the PaaS elements. WIDup uses <a href='https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep" target="_blank">bicep</a> 
+    as the declarative language for the cloud infrastructure.<br/> ')
+
     if (!(Test-path $global:htmlOutputPath)) {new-item -Path $global:htmlOutputPath -ItemType Directory}
     $doc.save()
 }
