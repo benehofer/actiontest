@@ -1,3 +1,11 @@
+#<DOC>
+#The deploy pipeline is the main pipeline of the Devops environment. It is triggered by push events 
+#on the branches. The trigger also has the prerequisite that artefacts in one or more of the repository 
+#folders "iac", "ps" and "dat" have been changed. The pipeline ensures that the deployment steps are 
+#executed in the correct order and with the correct dependencies on each other.<br/>The pipeline 
+#jobs exclusively use "reusable workflows", i.e. the individual jobs call other pipelines with 
+#corresponding parameters.
+#</DOC>
 name: 'deploy'
 
 on:

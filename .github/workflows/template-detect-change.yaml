@@ -1,3 +1,11 @@
+#<DOC>
+#Pipelines whose name begins with "template" are <a href='https://docs.github.com/en/actions/using-workflows/reusing-workflows' target='_blank'>
+#reusable workflows</a> that are called by the main workflow. When called, the paratemeters declared 
+#under "inputs" must be transferred.<br/>The template-detect-change workflow is used to find out in which 
+#artefact folders of the repository content has changed. This information is used in the deploy pipeline 
+#to execute individual jobs or not, depending on whether this is necessary due to the changes in the 
+#current commit or not.<br/>The pipeline uses a 3rd party marketplace Github action (dorny/paths-filter) for its function.
+#</DOC>
 name: Detect change in repos
 
 on:

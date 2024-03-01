@@ -1,3 +1,16 @@
+#<DOC>
+#Pipelines whose name begins with "template" are 
+#<a href='https://docs.github.com/en/actions/using-workflows/reusing-workflows' target='_blank'>
+#reusable workflows</a> that are called by the main workflow. When called, the paratemeters declared 
+#under "inputs" must be transferred.<br/>The template-deploy pipeline executes the plan and apply 
+#phases for each artefact type. To do this, the workflow first downloads the previously created artefact. 
+#The workflow then logs on to the Azure Cloud with the service principal, whose attributes are stored 
+#in the <a href='https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment' tagret='_blank'>
+#Github Actions Environment Secrets</a>, and finally starts the deploy script of the respective artefact type, 
+#which is located in the devops folder of the repository. This starts the plan.ps1 or apply.ps1 
+#script previously created and contained in the artefact, depending on the mode in which the workflow 
+#is executed (mode parameter).
+#</DOC>
 name: Deploy IAC
 
 on:

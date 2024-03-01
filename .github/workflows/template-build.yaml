@@ -1,3 +1,17 @@
+#<DOC>
+#Pipelines whose name begins with "template" are 
+#<a href='https://docs.github.com/en/actions/using-workflows/reusing-workflows' target='_blank'>
+#reusable workflows</a> that are called by the main workflow. When called, the parameters 
+#declared under "inputs" must be transferred.<br/>The template-build pipeline performs the 
+#build task for all artefacts. Corresponding 
+#<a href='https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts' target='_blank'>
+#Github Actions artefacts</a> are created and saved in the context of the workflow. These artefacts are used 
+#in the later plan and build phases.<br/>In addition to specific elements, the artefacts created contain 
+#2 Powershell scripts per type (plan.ps1 and apply.ps1), which in turn contain the code for the corresponding 
+#phases.<br/>The build phase is the only phase in which the entire repository is loaded onto the Pipeline Worker. 
+#When building the Github Actions artefacts, no 3rd party marketplace extensions are used and the pipeline 
+#does not establish any connections to other systems. This isolation ensures that the build is secure.
+#</DOC>
 name: Build code artifacts
 
 on:

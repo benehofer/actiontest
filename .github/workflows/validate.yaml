@@ -1,3 +1,9 @@
+#<DOC>
+#The validate pipeline is executed for pull requests on the main branch. The pipeline is only executed 
+#when changes are made to the iac code artefacts and performs the build and plan steps for the artefacts. 
+#Before a pull request can be merged, you must wait for this pipeline to run. The pipeline log shows the 
+#effects of the iac adjustments.
+#</DOC>
 name: 'Production validation'
 
 on:
@@ -6,7 +12,6 @@ on:
       - main
     paths:
       - 'iac/**'
-      - 'ps/**'      
 
 jobs:
   detect-change:
@@ -17,21 +22,18 @@ jobs:
     if: ${{ needs.detect-change.outputs.iac == 'true'}}
     uses: ./.github/workflows/template-build.yaml
     with:
+      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       artifacttype: 'iac'
-    secrets: inherit
 
-  build-ps:
-    needs: detect-change
-    if: ${{ needs.detect-change.outputs.ps == 'true'}}
-    uses: ./.github/workflows/template-build.yaml
-    with:
-      artifacttype: 'ps'
-    secrets: inherit      
-
-  plan-integration-iac:
+  plan-iac:
     needs: build-iac
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     uses: ./.github/workflows/template-deploy.yaml
     with:
-      doenv: 'integration-plan'
+      doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}-plan"
       workflowtype: iac
-    secrets: inherit                
+      mode: plan
+    secrets: inherit      
+  

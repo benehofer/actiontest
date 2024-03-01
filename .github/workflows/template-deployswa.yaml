@@ -1,4 +1,13 @@
-name: Deploy IAC
+#<DOC>
+#Pipelines whose name begins with "template" are <a href='https://docs.github.com/en/actions/using-workflows/reusing-workflows' target='_blank'>
+#reusable workflows</a> that are called by the main workflow. When called, the parameters declared under "inputs" 
+#must be transferred.<br/>The template-deployswa pipeline is a special variant of the deploy pipeline. It is used 
+#instead of the normal template-deploy workflow for the "doc" artefact type. Uploading content to a static web 
+#app requires a special process with proprietary command line tools that cannot be executed in the normal context 
+#of a worker agent. Therefore, a Docker container is started for this one job (deploy frontend), which performs 
+#the upload.<br/>Other than that, the workflow does not differ from the normal template-deploy workflow.
+#</DOC>
+name: Deploy with SWA
 
 on:
   workflow_call:
