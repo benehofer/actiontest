@@ -1,3 +1,13 @@
+<#
+<DOC>
+In addition to the REST Api input to the interface, the syncjob scheduler function is the second way in which the queue cycle is 
+started <section:widup queues>. The function is executed regularly via a scheduler. With each run, the function checks the 
+yncjob table to see which of the syncjobs need to be restarted based on the time of the last execution. The function can 
+differentiate between delta and full syncs.<br/>If a syncjob is found that needs to be executed again, a corresponding data 
+record is added to the syncjob queue, from where it is finally processed further by the syncjob_queueworker 
+<section:syncjob_queueworker>.
+</DOC>
+#>
 param($Timer)
 
 Import-Module widtools -WarningAction SilentlyContinue

@@ -623,8 +623,26 @@ function Set-wupDok() {
             BDescription = $vars.$($_).description
         }})    
     }
-    function getqueueworker() {
-        gci '.\ps\Azure Functions' -Directory | ? {$_.fullname -like '*_queueworker'} | %{
+    function gettablenames() {
+        $vars=$((gc .\variables.json -Raw) | convertfrom-json | select -ExpandProperty default)
+        $($vars | get-member -MemberType NoteProperty | ? {$_.name -like "*table_name"} | select -ExpandProperty name | %{[PSCustomObject]@{
+            AQueue = $vars.$($_).value
+            BDescription = $vars.$($_).description
+        }})    
+    } 
+    function gettabledata($n,$s) {
+        $n="syncjob"
+        $s=@("recordtype","sourcetype","destinationtype","dbfilter","deltafilter","frequencyfullsync","frequencydeltasync","nextjob")
+        $i=1
+        $ns=@()
+        $s | %{
+            $c=$_
+            $ns+=[PSCustomObject]@{name="$i$($c)";expression={$_.$($c | Out-String)}}
+        }
+        Import-Excel -path ".\dat\wupData.xlsx" -WorksheetName $n | ? {$_.rowkey -ne $null} | select $ns
+    }    
+    function getmainfunctions($n) {
+        gci '.\ps\Azure Functions' -Directory | ? {$_.fullname -like "*$($n)*"} | %{
             $skip=$false
             $code=(gc "$($_.fullname)\run.ps1" | %{if ($_.indexof("<#") -ge 0) {$skip=$true};if (!$skip) {$_};if ($_.indexof("#>") -ge 0) {$skip=$false}} | ? {$_ -notlike "#*"}) -join "`r`n"
             $config=(gc "$($_.fullname)\function.json" -raw)
@@ -637,6 +655,9 @@ function Set-wupDok() {
                 config=$config
             }
         }
+    }    
+    function getqueueworker() {
+        getmainfunctions -n "_queueworker"
     }
     function getbicepresources() {
         $s=$(gc ".\IaC\source.bicep" -Raw -Encoding UTF8)
@@ -766,7 +787,7 @@ function Set-wupDok() {
     $doc.addArticle("Queue worker reference","A worker is defined within the Azure Function App via two files. One is the 
     configuration file (function.json) and the other is the code file that contains the code (run.ps1). WIDup uses Powershell as the scripting 
     language.<br/>The individual workers are described in detail below.")
-    getqueueworker | ? {$null -ne $_} | %{
+    $(getmainfunctions -n "_queueworker") | ? {$null -ne $_} | %{
         $doc.addSection($_.title)
         $doc.addText($_.text)
         $doc.addTitle("Function configuration")
@@ -774,6 +795,39 @@ function Set-wupDok() {
         $doc.addTitle("Function code")
         $doc.addCode($_.code)
     }
+    $doc.addArticle("Trigger reference","Just like a worker, the two trigger functions that start the cycle via the queues are also defined with 
+    two files. One is the configuration file (function.json) and the other is the code file that contains the code (run.ps1). WIDup uses 
+    Powershell as the scripting language.<br/>The trigger functions are described in detail below.")
+    $(getmainfunctions -n "_projekt_erfassungsjournale") | ? {$null -ne $_} | %{
+        $doc.addSection($_.title)
+        $doc.addText($_.text)
+        $doc.addTitle("Function configuration")
+        $doc.addCode($_.config)
+        $doc.addTitle("Function code")
+        $doc.addCode($_.code)
+    }
+    $(getmainfunctions -n "_syncjob_scheduler") | ? {$null -ne $_} | %{
+        $doc.addSection($_.title)
+        $doc.addText($_.text)
+        $doc.addTitle("Function configuration")
+        $doc.addCode($_.config)
+        $doc.addTitle("Function code")
+        $doc.addCode($_.code)
+    }
+
+    $doc.addArticle("Helper tables",'The functions in the queues are also controlled via environment-specific parameters that are stored in 
+    Azure Storage Account tables. The data is defined in the "dat" artifact type within the repository <section:artifact types> and transferred 
+    to the Azure Storage Account tables in the context of the CI/CD pipelines <section:artifact rollout>.')
+    $doc.addSection("Table names")
+    $doc.addText('WIDup uses the following tables:')
+    $doc.addTable($(gettablenames))
+    $doc.addSection("Apischema table")
+    $doc.addText('The attribute mapping of the data record types (entities) of the various connected systems is defined in the apischema table. 
+    The apischema table is used within the queueworker to convert a data record of one system into a valid data record of another system. 
+    There are direct mappings and those where the target value is calculated using a formula based on the source attributes.')
+
+
+
 
     $doc.addPage("infrastructure","WIDup PaaS infrastructure","WIDup is a distributed cloud application that consists of various PaaS elements.","fa-square-check")
     $doc.addArticle("PaaS element reference","The elements of the WIDup interface are rolled out via automatic processes (CI/CD pipelines). The script language 
@@ -924,8 +978,6 @@ function Set-wupDok() {
     if (!(Test-path $global:htmlOutputPath)) {new-item -Path $global:htmlOutputPath -ItemType Directory}
     $doc.save()
 
-
- 
 
 
 }

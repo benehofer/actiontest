@@ -123,7 +123,7 @@ jobs:
       doenv: "${{ github.ref == 'refs/heads/main' && 'Production' || 'Integration' }}"
       workflowtype: ps
       mode: apply
-    secrets: inherit      
+    secrets: inherit
   
   apply-doc:
     needs: [build-doc, plan-iac, apply-iac, plan-dat, apply-dat, apply-ps]

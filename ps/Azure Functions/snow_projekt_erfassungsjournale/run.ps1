@@ -1,6 +1,11 @@
 <#
 <DOC>
-
+The function implements an http trigger, i.e. a REST function for receiving timecard data records from the Snow 
+system. Note: The original term for TimeCards was "capture journals", hence the technical name of the function.
+<br/>The function receives data records from the Service Now system and inserts them into the bcqueue 
+<article:widup queue processing>. <br/>From each incoming timecard record, two queue entries are made with 
+two different data record types, one for the timecard itself and one for the meta information about the 
+ticket.<br/>The REST Api is one of the two processes that start the queue cycle <section:widup queues>.
 </DOC>
 #>
 using namespace System.Net
