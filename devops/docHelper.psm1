@@ -833,10 +833,7 @@ function Set-wupDok() {
     $doc.addTable($(getvariables))
     
 
-
-
-    $doc.addPage("devops","WIDup uses various tools, structures and concepts to implement the idea of devops and continuous integration and deployment in a way that is suitable for the organisation.","fa-square-check")
-    $doc.addPage("repository","WIDup repository","The code artifacts of WIDup are managed in a Github repository.","fa-square-check")
+    $doc.addPage("devops","DevOps","WIDup uses various tools, structures and concepts to implement some of the ideas of devops and continuous integration and deployment in a way that is suitable for the organisation.","fa-square-check")
     $doc.addArticle("Repository","The code artifacts of WIDup are managed in a Github repository. The structure of the repository is optimised for automatic 
     processing in pipelines. The 
     division into different folders for the different artifact types (iac, ps, dat, doc) makes it possible to optimise the pipeline 
