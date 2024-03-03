@@ -666,14 +666,14 @@ function Set-wupDok() {
         $v=gc .\variables.json -raw | convertfrom-json
         $v.default | get-member -MemberType NoteProperty | select @{name="AName";Expression={$_.name}},@{name="BDescription";Expression={$v.default.$($_.name).description}},@{name="CType";Expression={$v.default.$($_.name).type}} |sort aname
     }
-    function getfoldercode() {
+    function getfoldercode($b=".\",$m=2) {
         function rec($f,$l,$m) {
             gci -path $f -Directory | ? {$null -ne $_} | sort name | %{
-                "$(@(0..$l) | %{"    "})$($_.name)"
+                "$(@(0..$l) | %{'    '})$($_.name)`r`n"
                 if ($l -lt $m) {rec -f $($_.fullname) -l $($l+1)}
             }
         }
-        rec -f ".\" -l 0 -m 2
+        rec -f $b -l 0 -m $m
     }
     function getfunction($name) {
         $(gci ".\" -filter "*.psm1" -exclude "az.*" -Recurse |%{
@@ -820,41 +820,104 @@ function Set-wupDok() {
     $doc.addText("The variables are used in three places.<br/>
     <ul>
     <li>The variable part of the main.bicep definition file<br/>
-    The bicep file is created dynamically in the build phase of the iac artefacts. The variables from the variables.json file are integrated as bicep variables.
+    The bicep file is created dynamically in the build phase of the iac artifacts. The variables from the variables.json file are integrated as bicep variables.
     </li>
     <li>The configuration parameters of the Azure function app<br/>
     These parameters are inserted into the configuration parameters of the function app as part of the bicep definition and are available in the code as environment variables.
     </li>
     <li>In the CI/CD pipeline scripts<br/>
-    In the build phase of the CI/CD pipelines, the variables are used to build the code artefacts for the respective target application environment.
+    In the build phase of the CI/CD pipelines, the variables are used to build the code artifacts for the respective target application environment.
     </li>
     </ul>")
     $doc.addSection("Overview of variables")
     $doc.addTable($(getvariables))
     
-    $doc.addPage("repository","WIDup repository","The code artefacts of WIDup are managed in a Github repository.","fa-square-check")
-    $doc.addArticle("Repository structure","The structure of the repository is optimised for automatic processing in pipelines. The 
-    division into different folders for the different artefact types (iac, ps, dat, doc) makes it possible to optimise the pipeline 
+
+
+
+    $doc.addPage("devops","WIDup uses various tools, structures and concepts to implement the idea of devops and continuous integration and deployment in a way that is suitable for the organisation.","fa-square-check")
+    $doc.addPage("repository","WIDup repository","The code artifacts of WIDup are managed in a Github repository.","fa-square-check")
+    $doc.addArticle("Repository","The code artifacts of WIDup are managed in a Github repository. The structure of the repository is optimised for automatic 
+    processing in pipelines. The 
+    division into different folders for the different artifact types (iac, ps, dat, doc) makes it possible to optimise the pipeline 
     and only perform those steps where the source code has changed.<br/>The code for the pipelines is an integral part of the repository 
     (folders devops, .github).<br/>The structure of the repository is mandatory, the code of the pipelines references 
     this structure 'hard-coded'.")
-    $doc.addSection("Artefact types")
-    $doc.addText('The source code of WIDup is divided into different artefact types. Together, these form the different functions and 
-    structures of the interface.<br/><br/>The "ps" artefact type contains the Powershell code for the Azure Function App. The subfolder 
-    structure of this artefact type forms the web root of the Function App below the "Azure Function" folder; this is specified by the 
+    $doc.addSection("Repository listing")
+    $doc.addCode($(getfoldercode))    
+    $doc.addSection("Artifact types")
+    $doc.addText('The source code of WIDup is divided into different artifact types. Together, these form the different functions and 
+    structures of the interface.<br/><br/>The "ps" artifact type contains the Powershell code for the Azure Function App. The subfolder 
+    structure of this artifact type forms the web root of the Function App below the "Azure Function" folder; this is specified by the 
     PaaS service (
     <a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-powershell" target="_blank">
-    further information on Azure Function development</a>).</br/><br/>The "iac" artefact type contains the code for the IaC (infrastructure as code) 
+    further information on Azure Function development</a>).</br/><br/>The "iac" artifact type contains the code for the IaC (infrastructure as code) 
     rollout of the PaaS elements. WIDup uses <a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep" target="_blank">bicep</a> 
-    as the declarative language for the cloud infrastructure.<br/><br/>The "dat" artefact type contains master data of the interface in the form of Excel 
-    or other data files. The data is copied to Azure Storage Accounts during deployment, e.g. to table storage.<br/><br/>Finally, the "doc" artefact type 
+    as the declarative language for the cloud infrastructure.<br/><br/>The "dat" artifact type contains master data of the interface in the form of Excel 
+    or other data files. The data is copied to Azure Storage Accounts during deployment, e.g. to table storage.<br/><br/>Finally, the "doc" artifact type 
     contains elements that are required for the dynamic structure of the documentation. These include HTML snippets, CSS and JS files as well as graphics.
-    <br/><br/>Note: WIDup knows another artefact type: "tst"; no source files are required for this in WIDup, so there is no folder in the repository for 
-    the "tst" artefact type.')
-    $doc.addSection("Folder listing")
-    $doc.addCode($(getfoldercode))
+    <br/><br/>Note: WIDup knows another artifact type: "tst"; no source files are required for this in WIDup, so there is no folder in the repository for 
+    the "tst" artifact type.')
+    $doc.addSection("Artifact rollout")
+    $doc.addText('For each artifact type, 3 actions or phases are performed to convert the source code in the repository into entities in the target 
+    environment: build, plan and apply. This standardisation of the deployment structure is closely linked to the structure of the repository and 
+    enables a high degree of standardisation of the deployment code, although the entities to be created are very diverse.<br/><br/>In the "build" 
+    phase, a rollout package is created from the source code for each artifact type in the repository and stored in the context of the current 
+    pipeline. This package is then used for the subsequent plan and apply phases.<br/><br/>The plan phase compares the definitions in the rollout 
+    package with the entities already present in the target environment and collects the delta. The delta is output as text information in the 
+    pipeline logs.<br/>For some artifact types (ps, doc, tst) there is no meaningful plan phase. For these types, the plan phase is omitted.<br/><br/>
+    Finally, the apply phase converts the definitions in the rollout package into effective adaptations of the target environment and virtually 
+    eliminates the delta between the environment and the definition, so that the environment finally corresponds to the definition,')
+    $doc.addGallery(@("artifacts"))
+    $doc.addSection("Branches")
+    $doc.addText('Branches make it possible to manage different versions of the elements in the repository independently of each other and to merge 
+    them if necessary. Further basic information on branches is available 
+    <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches" target="_blank">
+    here</a>.<br/>WIDup uses this possibility to test further developments before they are introduced into the productive target environment.<br/>
+    The WIDup pipelines implement a very simple branching strategy. The main branch is always connected to the productive target environment, 
+    changes to the code base of the main branch are rolled out to the productive environment. The main branch is protected with 
+    <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" target="_blank">
+    protection rules</a> so that code cannot be inserted directly into the main branch. Instead, the process of a 
+    <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests" target="_blank">
+    pull request</a> must be carried out in order to insert code changes from another branch into the main branch and thus apply them to production.<br/>
+    Further developments are carried out in so-called feature branches. In WIDup, the name of a feature branch begins with the word "feature" followed by a 
+    forward slash and an arbitrary designation (e.g. feature/newFeature). A feature branch always originates from the main branch and then develops further. 
+    Feature branches are linked to the integration environment, i.e. changes to the code base of feature branches are applied in the integration environment. 
+    This means that code adaptations can initially be tested away from production. When a feature is ready for production, the code base is transferred to the 
+    main branch with a pull request; process-related approvals can be integrated at several points.')
+    $doc.addGallery(@("branches"))
     $doc.addArticle("CI/CD","WIDup uses < href='https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions' target='_blank'>
     Github Actions</a> as a CI/CD platform. The pipelines perform the build, plan and apply steps described above.")
+    $doc.addSection("Github environments")
+    $doc.addText('Github environments are used to store environment-specific variables and secrets that are used in workflows. This allows a more generic 
+    (parameterised) way of writing workflows. In WIDup, the same workflows can be used for different target environments, although different parameters 
+    are required for the different target environments.<br/>In addition, similar to branches, protection rules can be applied to environments. This makes 
+    it possible, for example, to make approvals necessary for deployments to a specific environment and thus implement procedural and organisational 
+    requirements for the Deploymnet process.<br/>Further information on github environments is available at 
+    <a href="https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment" target="_blank">this link</a>.
+    <br/>Workflow jobs can reference environments and thus use the variables and secrets of the environment on the one hand, and on the other hand, 
+    approvals may have to be made before a job is executed if the referenced environment requires this.<br/><br/>WIDup basically uses two environments: 
+    Integration and Production. Two additional environments are defined to enable very granular workflow control: Integration-plan and Production-plan.<br/><br/>
+    <ul>
+    <li>The integration-plan github environment contains the variables and secrets for the integration target environment. The environment is configured 
+    without protection rules and thus allows the direct execution of workflow steps that define this github environment as a target.</li>
+    <li>The integration github environment also contains the variables and secrets for the integration target environment. The environment is configured 
+    with protection rules. an approval is required for workflow steps that define this github environment as the target.</li>
+    <li>The production-plan github environment contains the variables and secrets for the production target environment. The environment is configured 
+    without protection rules and thus allows the direct execution of workflow steps that define this github environment as the target.</li>
+    <li>The production github environment also contains the variables and secrets for the production target environment. The environment is configured 
+    with protection rules. an approval is required for workflow steps that define this github environment as the target.</li>
+    </ul><br/><br/>All in all, this setup allows the workflows to be interrupted at points where it makes sense. For example, the plan phase of the 
+    iac artefact can be applied to one of the github environments with the "-plan" suffix so that the phase runs through without approval. 
+    In the apply phase of the same artefact, the github environment can then be used without "-plan"; this stops the workflow at this point and waits 
+    for an approval. An approver can then first view the result of the plan phase and then decide whether to continue the workflow.')
+    $doc.addSection("Workflow definitions")
+    $doc.addText('Workflows or pipelines are specified in Github Actions in the form of YAML files. In minimu, a workflow consists of a trigger and 
+    one or more jobs. A job contains one or more steps. The individual steps of a job run sequentially on a worker agent. Several jobs in a workflow 
+    potentially run on different worker agents and run synchronously by default. Control elements are used in the WIDup pipelines (needs, if) to 
+    control the order of jobs and to make the entire process sequential.<br/>WIDup recognises 2 types of workflow, main workflows (deploy, validate) 
+    and workflow templates (template-detect-change, template-build, template-deploy), which are used like function or module definitions.<br/>All 
+    pipelines are described in detail below.')
     getworkflows | %{
         $doc.addSection($($_.name))
         $doc.addText($($_.text))
