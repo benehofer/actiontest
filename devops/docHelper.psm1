@@ -631,16 +631,13 @@ function Set-wupDok() {
         }})    
     } 
     function gettabledata($n,$s) {
-        $n="syncjob"
-        $s=@("recordtype","sourcetype","destinationtype","dbfilter","deltafilter","frequencyfullsync","frequencydeltasync","nextjob")
+        #$n="syncjob"
+        #$s=@("recordtype","sourcetype","destinationtype","dbfilter","deltafilter","frequencyfullsync","frequencydeltasync","nextjob")
         $i=1
         $ns=@()
-        $s | %{
-            $c=$_
-            $ns+=[PSCustomObject]@{name="$i$($c)";expression={$_.$($c | Out-String)}}
-        }
+        $s | %{$c=$_;$ns += @{n="$i$($c)";e=([Scriptblock]::Create("`$_.$($c)"))};$i++}
         Import-Excel -path ".\dat\wupData.xlsx" -WorksheetName $n | ? {$_.rowkey -ne $null} | select $ns
-    }    
+    }
     function getmainfunctions($n) {
         gci '.\ps\Azure Functions' -Directory | ? {$_.fullname -like "*$($n)*"} | %{
             $skip=$false
@@ -825,7 +822,7 @@ function Set-wupDok() {
     $doc.addText('The attribute mapping of the data record types (entities) of the various connected systems is defined in the apischema table. 
     The apischema table is used within the queueworker to convert a data record of one system into a valid data record of another system. 
     There are direct mappings and those where the target value is calculated using a formula based on the source attributes.')
-
+    $doc.addTable($(gettabledata -n "syncjob" -s @("recordtype","sourcetype","destinationtype","dbfilter","deltafilter","frequencyfullsync","frequencydeltasync","nextjob")))
 
 
 
