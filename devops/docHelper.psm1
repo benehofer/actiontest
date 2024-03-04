@@ -822,10 +822,24 @@ function Set-wupDok() {
     $doc.addText('The attribute mapping of the data record types (entities) of the various connected systems is defined in the apischema table. 
     The apischema table is used within the queueworker to convert a data record of one system into a valid data record of another system. 
     There are direct mappings and those where the target value is calculated using a formula based on the source attributes.')
+    $doc.addTable($(gettabledata -n "apischema" -s @("entity","bcattname","snowattname","dvattname","adattname","isprimarykey")))
+    $doc.addSection("Syncjob table")
+    $doc.addText('The syncjob table is the control table for all data synchronizations that are processed via the interface. For schedule-based 
+    synchronizations, the time of the last execution, the frequencies for delta and complete synchronizations and the order of the jobs (via 
+    the nextjob attribute) are also maintained in this table.')
     $doc.addTable($(gettabledata -n "syncjob" -s @("recordtype","sourcetype","destinationtype","dbfilter","deltafilter","frequencyfullsync","frequencydeltasync","nextjob")))
+    $doc.addSection("Department table")
+    $doc.addText('The department table contains additional information on the departments within the Wagner AG organization. The data is used in 
+    the context of data synchronization from Business Central/Swiss Salary to the ADDS system. The table contains the descriptive name for each department number 
+    as well as a comma-separated list of AD groups that are used to manage the assignment groups in Service Now.')
+    $doc.addTable($(gettabledata -n "department" -s @("departmentno","departmentname","adds_assignment_groups")))
+    $doc.addSection("Location table")
+    $doc.addText('The location table contains additional information on the work locations of Wagner AG employees. Specifically, the table 
+    contains the addresses of the Wagner locations. This data is also used in the context of the interface between Business Central/Swiss 
+    Salary and the ADDS system.')
+    $doc.addTable($(gettabledata -n "location" -s @("locationno","streetaddress","physicaldeliveryofficename","co","postalcode")))
 
-
-
+    
     $doc.addPage("infrastructure","WIDup PaaS infrastructure","WIDup is a distributed cloud application that consists of various PaaS elements.","fa-square-check")
     $doc.addArticle("PaaS element reference","The elements of the WIDup interface are rolled out via automatic processes (CI/CD pipelines). The script language 
     bicep is used for the infrastructure part. The image below provides an overview of the used resources in WIDup.")
